@@ -1,0 +1,2 @@
+# VidMe - Movie Rental API
+This is the back end for a movie rental service. This is a project in my ongoing journey to get better with python web development. The goal is to use docker, flask, a SQL database, and maybe even add redis to create a movie rental business.
