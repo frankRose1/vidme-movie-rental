@@ -1,0 +1,16 @@
+version: '2'
+
+services:
+  web:
+    build: .
+    command: >
+      gunicorn -b 0.0.0.0:8000
+        --access-logfile -
+        --reload
+        "vidme.app.create_app()"
+    env_file:
+      - '.env'
+    ports:
+      - '8000:8000'
+    volumes:
+      - '.:/app'

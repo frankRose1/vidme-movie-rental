@@ -1,0 +1,9 @@
+Flask==0.12
+
+# App server for both dev and prod
+gunicorn==19.4
+
+# API
+flask-classful==0.14
+flask-marshmallow==0.7.0
+flask-jwt-extended==3.3
