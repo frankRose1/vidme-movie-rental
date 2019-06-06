@@ -26,7 +26,7 @@ JWT_COOKIE_SECURE = False
 JWT_SESSION_COOKIE = False
 
 # Expire tokens in 1 year(unrelated to the cookie's duration)
-JWT_ACCESS_TOKEN_EXPIRES = timedelta(52=weeks)
+JWT_ACCESS_TOKEN_EXPIRES = timedelta(weeks=52)
 
 # we are authenticating with this auth token for a number of endpoints
 JWT_ACCESS_COOKIE_PATH = '/'
