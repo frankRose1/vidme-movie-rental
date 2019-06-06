@@ -1,6 +1,15 @@
 version: '2'
 
 services:
+  postgres:
+    env_file:
+      - ".env"
+    image: "postgres:10.3-alpine"
+    ports:
+      - "5432:5432"
+    volumes:
+      - "postgres:/var/lib/postgresql/data"
+
   web:
     build: .
     command: >
@@ -8,9 +17,14 @@ services:
         --access-logfile -
         --reload
         "vidme.app.create_app()"
+    depends_on:
+      - "postgres"
     env_file:
-      - '.env'
+      - ".env"
     ports:
-      - '8000:8000'
+      - "8000:8000"
     volumes:
-      - '.:/app'
+      - ".:/app"
+
+volumes:
+  postgres: {}
