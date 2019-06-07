@@ -1,5 +1,7 @@
 from flask import Flask, jsonify
 
+from vidme.api.auth import AuthView
+
 from vidme.extensions import (
     jwt,
     db,
@@ -21,7 +23,8 @@ def create_app(settings_override=None):
     if settings_override:
         app.config.update(settings_override)
     
-    # register blueprints
+    # register the API views
+    AuthView.register(app)
 
     # add extensions
     extensions(app)
