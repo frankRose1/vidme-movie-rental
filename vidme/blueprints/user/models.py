@@ -1,8 +1,9 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from lib.util_sqlalchemy import ResourceMixin
 from vidme.extensions import db
 
-class User(db.Model):
+class User(ResourceMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
 

@@ -25,7 +25,8 @@ class AwareDateTime(TypeDecorator):
 
 class ResourceMixin(object):
     """
-    For adding common functionality to our SQL models
+    For adding common functionality to our SQL models such as save(), delete(),
+    and created/updated timezone aware dates
     """
     # Keep track of when records are created and updated
     created_on = db.Column(AwareDateTime(), 
@@ -38,8 +39,22 @@ class ResourceMixin(object):
     def sort_by(cls, field, direction):
         """
         Validate the sort field and direction.
+
+        :param field: Field name
+        :type field: str
+
+        :param direction: Direction
+        :type direction: str
+
+        :return: tuple
         """
-        pass
+        if field not in cls.__table__.columns:
+            field = 'created_on'
+        
+        if direction not in ('asc', 'desc'):
+            direction = 'asc'
+        
+        return field, direction
 
     @classmethod
     def bulk_delete(cls, ids):
@@ -47,8 +62,13 @@ class ResourceMixin(object):
         Delete 1 or more model instances.
 
         :param ids: List of ids to be deleted
+        :return: number of items deleted
         """
-        pass
+        delete_count = cls.query.filter(cls.id.in_(ids)).delete(
+            synchronize_session=False)
+        db.session.commit()
+
+        return delete_count
 
     def save(self):
         """
