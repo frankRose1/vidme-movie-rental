@@ -12,4 +12,7 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
+# for the CLI
+RUN pip install --editable .
+
 CMD gunicorn -b 0.0.0.0:8000 --access-logfile - "vidme.app:create_app()"
