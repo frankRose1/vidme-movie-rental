@@ -12,3 +12,11 @@ SQLAlchemy-Utils==0.32
 flask-classful==0.14
 flask-marshmallow==0.7.0
 flask-jwt-extended==3.3
+
+# Testing and analysis
+pytest==2.9
+pytest-cov==2.2
+flak8==2.5
+
+# CLI
+Click==6.4
