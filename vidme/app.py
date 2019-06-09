@@ -1,6 +1,8 @@
 from flask import Flask, jsonify
 
+from vidme.blueprints.user.models import User
 from vidme.api.auth import AuthView
+from vidme.api.v1.user import UsersView
 
 from vidme.extensions import (
     jwt,
@@ -25,6 +27,7 @@ def create_app(settings_override=None):
     
     # register the API views
     AuthView.register(app)
+    UsersView.register(app)
 
     # add extensions
     extensions(app)
@@ -55,6 +58,13 @@ def jwt_callbacks():
 
     :return: None
     """
+    @jwt.user_loader_callback_loader
+    def user_loader_callback(identity):
+        """
+        This is called every time a user accesses a protected endpoint.
+        "username" was the identity we used when creating the access_token
+        """
+        return User.query.filter(User.username == identity).first()
 
     @jwt.unauthorized_loader
     def jwt_unauthorized_callback():

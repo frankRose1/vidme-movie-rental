@@ -13,7 +13,7 @@ SQLALCHEMY_TRACK_MODIFICATIONS = False
 SERVER_NAME = '192.168.99.100:8000' # if on Docker For Windows/Mac use "localhost:8000"
 SECRET_KEY = 'notSoSecretDevelopmentKey'
 
-# Allow browsers to securely persist auth tokens but also
+# Allow browsers to securely persist auth tokens(by default jwt_extened only checks headers) but also
 # allow headers so that other clients can send an auth token too
 JWT_TOKEN_LOCATION = ['cookies', 'headers']
 
@@ -29,6 +29,8 @@ JWT_SESSION_COOKIE = False
 JWT_ACCESS_TOKEN_EXPIRES = timedelta(weeks=52)
 
 # we are authenticating with this auth token for a number of endpoints
+# if performance issues are a problem regarding sending cookies on every request
+# then this may need to be changed
 JWT_ACCESS_COOKIE_PATH = '/'
 
 # Enable CSRF double submit protection (http://www.redotheweb.com/2015/11/09/api-security.html)

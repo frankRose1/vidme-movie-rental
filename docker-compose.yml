@@ -16,7 +16,7 @@ services:
       gunicorn -b 0.0.0.0:8000
         --access-logfile -
         --reload
-        "vidme.app.create_app()"
+        "vidme.app:create_app()"
     depends_on:
       - "postgres"
     env_file:

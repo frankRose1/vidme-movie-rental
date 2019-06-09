@@ -1,4 +1,4 @@
-from flask import jsonfiy, request
+from flask import jsonify, request
 from flask_classful import FlaskView
 
 from flask_jwt_extended import (
@@ -18,36 +18,55 @@ class AuthView(FlaskView):
         json_data = request.get_json()
 
         if not json_data:
-            response = {
+            response = jsonify({
                 'error': 'Invalid input.'
-            }
-            return jsonfiy(response), 400
+            })
+            return response, 400
         
         data, errors = auth_schema.load(json_data)
 
         if errors:
-            response = {
+            response = jsonify({
                 'error': errors
-            }
+            })
 
-            return jsonfiy(response), 422
+            return response, 422
         
         user = User.find_by_identity(data['identity'])
 
         if user and user.authenticated(password=data['password']):
+            # jwt_extended will use the identity to lookup a user on protected endpoints
             access_token = create_access_token(identity=user.username)
 
-            response = jsonfiy({
+            response = jsonify({
                 'data': {
                     'access_token': access_token
                 }
             })
 
             # Set the JWTs and the CSRF double submit protection cookies
+            # Clients such as web browsers support cookies and "set_access_cookies"
+            # will set two cookies in the browser, 1)access_token 2)CSRF token
             set_access_cookies(response, access_token)
 
             return response, 200
+        
+        response = jsonify({
+            'error': 'Invalid credentials.'
+        })
+        return response, 401
     
     @jwt_required
     def delete(self):
-        pass
+        response = jsonify({
+            'data': {
+                'logout': True
+            }
+        })
+
+        # Since our api also accepts cookies, the backend needs to send a response
+        # to delete the cookies. unset_jwt_cookies will remove the cookies in the
+        # users browser
+        unset_jwt_cookies(response)
+
+        return response, 200

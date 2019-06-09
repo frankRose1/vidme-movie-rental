@@ -16,7 +16,9 @@ flask-jwt-extended==3.3
 # Testing and analysis
 pytest==2.9
 pytest-cov==2.2
-flak8==2.5
+flake8==2.5
 
 # CLI
 Click==6.4
+
+pytz==2019.1

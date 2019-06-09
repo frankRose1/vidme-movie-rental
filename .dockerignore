@@ -3,3 +3,4 @@
 .cache
 .dockerignore
 .coverage
+**/__pycache__
