@@ -3,15 +3,21 @@ import os
 
 DEBUG = True
 
+SERVER_NAME = '192.168.99.100:8000' # if on Docker For Windows/Mac use "localhost:8000"
+SECRET_KEY = 'notSoSecretDevelopmentKey'
+
+# SQLALchemy
 db_uri = 'postgresql://{0}:{1}@postgres:5432/{2}'.format(os.environ['POSTGRES_USER'], 
                                                         os.environ['POSTGRES_PASSWORD'], 
                                                         os.environ['POSTGRES_DB'])
-
 SQLALCHEMY_DATABASE_URI = db_uri
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-SERVER_NAME = '192.168.99.100:8000' # if on Docker For Windows/Mac use "localhost:8000"
-SECRET_KEY = 'notSoSecretDevelopmentKey'
+# Seed user
+SEED_ADMIN_EMAIL = 'dev@local.host'
+SEED_ADMIN_PASSWORD = 'devPassword'
+SEED_ADMIN_USERNAME = 'devAdmin1'
+
 
 # Allow browsers to securely persist auth tokens(by default jwt_extened only checks headers) but also
 # allow headers so that other clients can send an auth token too
