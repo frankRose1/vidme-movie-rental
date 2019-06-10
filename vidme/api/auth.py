@@ -39,6 +39,8 @@ class AuthView(FlaskView):
             # identity is used to lookup a user on protected endpoints
             access_token = create_access_token(identity=user.username)
 
+            user.update_activity_tracking(request.remote_addr)
+
             response = jsonify({
                 'data': {
                     'access_token': access_token

@@ -3,6 +3,7 @@ from flask import Flask, jsonify
 from vidme.blueprints.user.models import User
 from vidme.api.auth import AuthView
 from vidme.api.v1.user import UsersView
+from vidme.api.v1.admin import AdminView
 
 from vidme.extensions import (
     jwt,
@@ -29,6 +30,7 @@ def create_app(settings_override=None):
     # register the API views
     AuthView.register(app)
     UsersView.register(app)
+    AdminView.register(app)
 
     # add extensions
     extensions(app)
