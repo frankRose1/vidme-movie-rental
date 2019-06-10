@@ -3,6 +3,7 @@ from marshmallow import fields, validate, ValidationError
 from vidme.extensions import marshmallow
 from vidme.blueprints.user.models import User
 
+
 def ensure_unique_identity(data):
     """
     Ensures that an email and/or username is not already taken

@@ -32,7 +32,6 @@ def app():
     ctx.pop()
 
 
-
 @pytest.yield_fixture(scope='function')
 def client(app):
     """
@@ -42,7 +41,6 @@ def client(app):
     :return: Flask app client
     """
     yield app.test_client()
-
 
 
 @pytest.fixture(scope='session')
@@ -72,8 +70,7 @@ def db(app):
     return _db
 
 
-
-@pytest.yield_fixtures(scope='function')
+@pytest.yield_fixture(scope='function')
 def users(db):
     """
     Create user fixtures. They reset per test.
@@ -99,7 +96,7 @@ def users(db):
 
     for user in users:
         db.session.add(User(**user))
-    
+
     db.session.commit()
 
     return db

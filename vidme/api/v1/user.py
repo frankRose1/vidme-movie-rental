@@ -4,6 +4,7 @@ from vidme.api.v1 import V1FlaskView
 from vidme.blueprints.user.models import User
 from vidme.blueprints.user.schemas import registration_schema
 
+
 class UsersView(V1FlaskView):
     def post(self):
         json_data = request.get_json()
@@ -20,7 +21,7 @@ class UsersView(V1FlaskView):
             })
 
             return response, 422
-        
+
         user = User()
         user.email = data.get('email')
         user.username = data.get('username')

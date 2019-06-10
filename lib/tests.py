@@ -25,6 +25,8 @@ class ViewTestMixin(object):
     Automatically load in a client. To be used on view tests.
     """
 
+    # autouse means that we dont have to explictly use these fixtures
+    # and class that inherits ViewTestMixin will have a "self.client"
     @pytest.fixture(autouse=True)
     def set_common_fixtures(self, client):
         self.client = client

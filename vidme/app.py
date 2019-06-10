@@ -10,6 +10,7 @@ from vidme.extensions import (
     marshmallow
 )
 
+
 def create_app(settings_override=None):
     """
     Create a Flask app using the app factory pattern.
@@ -24,7 +25,7 @@ def create_app(settings_override=None):
 
     if settings_override:
         app.config.update(settings_override)
-    
+
     # register the API views
     AuthView.register(app)
     UsersView.register(app)
@@ -48,14 +49,13 @@ def extensions(app):
     jwt.init_app(app)
     db.init_app(app)
     marshmallow.init_app(app)
-    
+
     return None
 
 
 def jwt_callbacks():
     """
     Set up custom behavior for JWT authentication.
-
     :return: None
     """
     @jwt.user_loader_callback_loader
@@ -76,7 +76,6 @@ def jwt_callbacks():
 
         return jsonify(response), 401
 
-    
     @jwt.expired_token_loader
     def jwt_expired_token_callback():
         response = {

@@ -9,7 +9,7 @@ import click
 @click.argument('path', default='vidme')
 def cli(skip_init, path):
     """
-    Run flak8 to analyze your code base.
+    Run flake8 to analyze your code base.
 
     :param skip_init: Skip checking __init__.py files
     :param path: Test coverage path
