@@ -23,4 +23,4 @@ Using the CLI run ```docker-compose exec web vidme db reset --with-testdb```
     Send requests to http://192.168.99.100:8000
 
 ## CLI
-A custom CLI was built to make running common commands easier such as tests, flake8, and resetting/seeding the database. While the image is running, open a 2nd terminal and run ```docker-compose exec web vidme``` to see a list of commands.
+A custom CLI was built to make running common commands easier such as tests, flake8, and resetting/seeding the database. While the container is running, open a 2nd terminal and run ```docker-compose exec web vidme``` to see a list of commands.

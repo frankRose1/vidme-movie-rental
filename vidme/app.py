@@ -68,6 +68,19 @@ def jwt_callbacks():
         """
         return User.query.filter(User.username == identity).first()
 
+    @jwt.user_claims_loader
+    def add_claims_to_access_token_callback(identity):
+        """
+        This is called every time an access token is created. It will add any
+        additional info regarding the user to the access token. Identity
+        (username) of the user is passed as a param. Will mainly be used to
+        determine if a user is an admin or not.
+        """
+        user = User.query.filter(User.username == identity).first()
+        return {
+            'role': user.role
+        }
+
     @jwt.unauthorized_loader
     def jwt_unauthorized_callback():
         response = {

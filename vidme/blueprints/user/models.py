@@ -82,7 +82,7 @@ class User(ResourceMixin, db.Model):
             return check_password_hash(self.password, password)
 
         return True
-    
+
     def update_activity_tracking(self, ip_address):
         """
         Update various fields on the user that's related to meta data on their
