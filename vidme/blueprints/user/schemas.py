@@ -24,7 +24,7 @@ class RegistrationSchema(marshmallow.Schema):
     email = fields.Email(required=True, validate=ensure_unique_identity)
     username = fields.Str(required=True,
                             validate=[validate.Length(min=3, max=255),
-                                    validate.Regexp('^\w+$', message=USERNAME_MESSAGE),
+                                    validate.Regexp('^\w+$', error=USERNAME_MESSAGE),
                                     ensure_unique_identity])
     password = fields.Str(required=True,
                             validate=validate.Length(min=8, max=128))

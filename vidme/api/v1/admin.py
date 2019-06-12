@@ -1,4 +1,4 @@
-from flask import jsonify, request
+from flask import jsonify, request, url_for
 from flask_classful import route
 from sqlalchemy import text
 
@@ -7,11 +7,14 @@ from vidme.api.v1 import V1FlaskView
 from vidme.blueprints.admin.models import Dashboard
 from vidme.blueprints.admin.schemas import admin_edit_user_schema, user_schema
 from vidme.blueprints.user.models import User
+from lib.representations import output_json
 
 
 USER_NOT_FOUND = 'User not found.'
 
 class AdminView(V1FlaskView):
+
+    representations = {'application/json': output_json}
 
     # @admin_required
     def index(self):
@@ -21,8 +24,8 @@ class AdminView(V1FlaskView):
         and admins.
         """
         group_and_count_users = Dashboard.group_and_count_users()
-        response = jsonify(group_and_count_users)
-        return response, 200
+        response = group_and_count_users
+        return response
 
     @route('/users/', methods=['GET'])
     def users(self):
@@ -46,34 +49,40 @@ class AdminView(V1FlaskView):
             .filter(User.search(request.args.get('q', ''))) \
             .order_by(user.role.asc(), text(order_values)) \
             .paginate(page, page_size, True)
-        
-        response = { 'users': paginated_users }
-        return jsonify(response), 200
 
-    @route('/users/edit/<int:id>/', methods=['PUT'])
-    def edit_user(self, id):
+        response = { 'users': paginated_users }
+        return response
+
+    @route('/users/edit/<user_id>/', methods=['PATCH'])
+    def edit_user(self, user_id):
         """Admins can edit user accounts, for example if the username is 
         offensive/goes against guidelines or update their permissions
         """
+        response = {'error': USER_NOT_FOUND}
+
+        try:
+            user_id = int(user_id)
+        except ValueError:
+            return response, 404
+
         # find the User
-        user = User.query.filter(id=id).first()
+        user = User.query.filter(User.id == user_id).first()
 
         if user is None:
-            response = jsonify({'error': USER_NOT_FOUND})
             return response, 404
-        
+
         # load the json data
         json_data = request.get_json()
 
         # check for errors
         if not json_data:
-            response = jsonify({ 'error': 'Invalid input.' })
+            response = { 'error': 'Invalid input.' }
             return response, 400
         
         data, errors = admin_edit_user_schema(json_data)
 
         if errors:
-            response = jsonify({'error': errors})
+            response = {'error': errors}
             return response, 422
 
         # check if user is the last admin
@@ -81,7 +90,7 @@ class AdminView(V1FlaskView):
             response = {
                 'error': 'User is the last admin in the system.'
             }
-            return jsonify(response), 400
+            return response, 400
         
         # is username being changed
         if user.username != data['username']:
@@ -89,46 +98,52 @@ class AdminView(V1FlaskView):
             if existing_username is None:
                 user.username = data['username']
             else:
-                response = jsonify({'error': 'Username is already taken.'})
+                response = {'error': 'Username is already taken.'}
                 return response, 400
 
         user.role = data['role']
         user.save()
 
-        return jsonify(data), 200
+        headers = {'Location': url_for('AdminView:get_user', user_id=user.id)}
+        return '', 204, headers
 
-    @route('/users/<int:id>/', methods=['GET'])
-    def get_user(self, id):
+    @route('/users/<user_id>/', methods=['GET'])
+    def get_user(self, user_id):
         """Allows an admin to fetch specific user data
         """
-        user = User.query.filter(id=id).first()
+        response = {'error': USER_NOT_FOUND}
 
-        if User is None:
-            response = {
-                'error': USER_NOT_FOUND
-            }
-            return jsonify(response), 404
+        try:
+            user_id = int(user_id)
+        except ValueError:
+            return response, 404
+
+        user = User.query.filter(User.id == user_id).first()
+
+        if user is None:
+            return response, 404
 
         result = user_schema.dump(user)
 
-        return result.data, 200
+        return result.data
 
-    @route('/users/delete/<int:id>/', methods=['DELETE'])
-    def delete_user(self, id):
+    @route('/users/delete/<user_id>/', methods=['DELETE'])
+    def delete_user(self, user_id):
         """Admins can delete user accounts
         """
-        user = User.query.filter(id=id).first()
+        response = {'error': USER_NOT_FOUND}
 
-        if User is None:
-            response = {
-                'error': USER_NOT_FOUND
-            }
-            return jsonify(response), 404
+        try:
+            user_id = int(user_id)
+        except ValueError:
+            return response, 404
+
+        user = User.query.filter(User.id == user_id).first()
+
+        if user is None:
+            return response, 404
         
         user.delete()
-        response = {
-            'message': 'User was deleted successfully',
-            'deleted_id': user.id
-        }
 
-        return jsonify(response), 200
+        headers = {'Location': url_for('AdminView:users')}
+        return '', 204, headers

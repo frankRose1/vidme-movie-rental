@@ -20,7 +20,7 @@ class AdminEditUserschema(marshmallow.Schema):
     """
     username = fields.Str(required=True, 
                         validate=[validate.Length(min=3, max=255),
-                                validate.Regexp('^\w+$', message=USERNAME_MESSAGE)])
+                                validate.Regexp('^\w+$', error=USERNAME_MESSAGE)])
     role = fields.Str(required=True, validate=validate_role)
 
 

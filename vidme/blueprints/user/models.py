@@ -3,6 +3,7 @@ import pytz
 
 from collections import OrderedDict
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import or_
 
 from lib.util_sqlalchemy import ResourceMixin, AwareDateTime
 from vidme.extensions import db
@@ -66,6 +67,50 @@ class User(ResourceMixin, db.Model):
 
         return None
 
+    @classmethod
+    def is_last_admin(cls, user, new_role):
+        """
+        Determine if this user is the last admin in the system. This is to
+        ensure that there is always at least one admin.
+
+        :param user: User being modified
+        :type user: User 
+
+        :param new_role: Role the user is being changed to
+        :type new_role: str
+
+        :return: bool
+        """
+        is_changing_roles = user.role == 'admin' and new_role != 'admin'
+
+        if is_changing_roles:
+            admin_count = User.query.filter(User.role == 'admin').count()
+
+            if admin_count == 1:
+                return True
+
+        return False
+
+    @classmethod
+    def search(cls, query):
+        """
+        Search a resource by one or more fields.
+
+        :param query: Query to search by
+        :type query: str
+
+        :return: SQLAlchemy filter
+        """
+        if not query:
+            return ''
+
+        search_query = '%{0}%'.format(query) # %% partial words
+        search_chain = (User.email.ilike(search_query),
+                        User.username.ilike(search_query))
+
+        # or_ allows a match on the email OR username
+        return or_(*search_chain)
+
     def authenticated(self, with_password=True, password=''):
         """
         Ensure a user is authenticated, and optionally check their password
@@ -102,27 +147,3 @@ class User(ResourceMixin, db.Model):
         self.current_sign_in_ip = ip_address
 
         return self.save()
-
-    @classmethod
-    def is_last_admin(cls, user, new_role):
-        """
-        Determine if this user is the last admin in the system. This is to
-        ensure that there is always at least one admin.
-
-        :param user: User being modified
-        :type user: User 
-
-        :param new_role: Role the user is being changed to
-        :type new_role: str
-
-        :return: bool
-        """
-        is_changing_roles = user.role == 'admin' and new_role != 'admin'
-
-        if is_changing_roles:
-            admin_count = User.query.filter(User.role == 'admin').count()
-
-            if admin_count == 1:
-                return True
-
-        return False
