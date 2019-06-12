@@ -6,6 +6,7 @@ from sqlalchemy.types import TypeDecorator
 from lib.util_datetime import timezone_aware_datetime
 from vidme.extensions import db
 
+
 class AwareDateTime(TypeDecorator):
     """
     A DateTime type which can only store tz-aware DateTimes.
@@ -22,6 +23,7 @@ class AwareDateTime(TypeDecorator):
 
     def __repr__(self):
         return 'AwareDateTime()'
+
 
 class ResourceMixin(object):
     """

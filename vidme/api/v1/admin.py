@@ -5,8 +5,11 @@ from sqlalchemy import text
 # from lib.decorators import admin_required
 from vidme.api.v1 import V1FlaskView
 from vidme.blueprints.admin.models import Dashboard
+from vidme.blueprints.admin.schemas import admin_edit_user_schema, user_schema
 from vidme.blueprints.user.models import User
 
+
+USER_NOT_FOUND = 'User not found.'
 
 class AdminView(V1FlaskView):
 
@@ -52,17 +55,80 @@ class AdminView(V1FlaskView):
         """Admins can edit user accounts, for example if the username is 
         offensive/goes against guidelines or update their permissions
         """
-        pass
+        # find the User
+        user = User.query.filter(id=id).first()
+
+        if user is None:
+            response = jsonify({'error': USER_NOT_FOUND})
+            return response, 404
+        
+        # load the json data
+        json_data = request.get_json()
+
+        # check for errors
+        if not json_data:
+            response = jsonify({ 'error': 'Invalid input.' })
+            return response, 400
+        
+        data, errors = admin_edit_user_schema(json_data)
+
+        if errors:
+            response = jsonify({'error': errors})
+            return response, 422
+
+        # check if user is the last admin
+        if User.is_last_admin(user, data['role']):
+            response = {
+                'error': 'User is the last admin in the system.'
+            }
+            return jsonify(response), 400
+        
+        # is username being changed
+        if user.username != data['username']:
+            existing_username = User.find_by_identity(data['username'])
+            if existing_username is None:
+                user.username = data['username']
+            else:
+                response = jsonify({'error': 'Username is already taken.'})
+                return response, 400
+
+        user.role = data['role']
+        user.save()
+
+        return jsonify(data), 200
 
     @route('/users/<int:id>/', methods=['GET'])
     def get_user(self, id):
         """Allows an admin to fetch specific user data
         """
-        pass
+        user = User.query.filter(id=id).first()
 
+        if User is None:
+            response = {
+                'error': USER_NOT_FOUND
+            }
+            return jsonify(response), 404
+
+        result = user_schema.dump(user)
+
+        return result.data, 200
 
     @route('/users/delete/<int:id>/', methods=['DELETE'])
     def delete_user(self, id):
         """Admins can delete user accounts
         """
-        pass
+        user = User.query.filter(id=id).first()
+
+        if User is None:
+            response = {
+                'error': USER_NOT_FOUND
+            }
+            return jsonify(response), 404
+        
+        user.delete()
+        response = {
+            'message': 'User was deleted successfully',
+            'deleted_id': user.id
+        }
+
+        return jsonify(response), 200

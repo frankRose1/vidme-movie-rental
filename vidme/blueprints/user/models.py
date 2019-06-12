@@ -102,3 +102,27 @@ class User(ResourceMixin, db.Model):
         self.current_sign_in_ip = ip_address
 
         return self.save()
+
+    @classmethod
+    def is_last_admin(cls, user, new_role):
+        """
+        Determine if this user is the last admin in the system. This is to
+        ensure that there is always at least one admin.
+
+        :param user: User being modified
+        :type user: User 
+
+        :param new_role: Role the user is being changed to
+        :type new_role: str
+
+        :return: bool
+        """
+        is_changing_roles = user.role == 'admin' and new_role != 'admin'
+
+        if is_changing_roles:
+            admin_count = User.query.filter(User.role == 'admin').count()
+
+            if admin_count == 1:
+                return True
+
+        return False
