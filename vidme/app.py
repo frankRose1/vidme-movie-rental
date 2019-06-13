@@ -1,5 +1,7 @@
 from flask import Flask, jsonify
 
+import stripe
+
 from vidme.blueprints.user.models import User
 from vidme.api.auth import AuthView
 from vidme.api.v1.user import UsersView
@@ -26,6 +28,9 @@ def create_app(settings_override=None):
 
     if settings_override:
         app.config.update(settings_override)
+
+    stripe.api_key = app.config.get('STRIPE_API_KEY')
+    stripe.api_version = app.config.get('STRIPE_API_VERSION')
 
     # register the API views
     AuthView.register(app)

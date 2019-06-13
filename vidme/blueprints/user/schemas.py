@@ -23,18 +23,19 @@ def ensure_unique_identity(data):
 class RegistrationSchema(marshmallow.Schema):
     email = fields.Email(required=True, validate=ensure_unique_identity)
     username = fields.Str(required=True,
-                            validate=[validate.Length(min=3, max=255),
-                                    validate.Regexp('^\w+$', error=USERNAME_MESSAGE),
-                                    ensure_unique_identity])
+                          validate=[validate.Length(min=3, max=255),
+                                    ensure_unique_identity,
+                                    validate.Regexp('^\w+$',
+                                    error=USERNAME_MESSAGE)])
     password = fields.Str(required=True,
-                            validate=validate.Length(min=8, max=128))
+                          validate=validate.Length(min=8, max=128))
 
 
 class AuthSchema(marshmallow.Schema):
     identity = fields.Str(required=True,
-                            validate=validate.Length(min=3, max=255))
+                          validate=validate.Length(min=3, max=255))
     password = fields.Str(required=True,
-                            validate=validate.Length(min=8, max=128))
+                          validate=validate.Length(min=8, max=128))
 
 
 registration_schema = RegistrationSchema()

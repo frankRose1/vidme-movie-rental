@@ -1,4 +1,4 @@
-from flask import jsonify, request, url_for
+from flask import request, url_for
 from flask_classful import route
 from sqlalchemy import text
 
@@ -11,6 +11,7 @@ from lib.representations import output_json
 
 
 USER_NOT_FOUND = 'User not found.'
+
 
 class AdminView(V1FlaskView):
 
@@ -38,24 +39,25 @@ class AdminView(V1FlaskView):
         # return 30 users at a time max
         if page_size > 30:
             page_size = 30
-        
+
         sort_by = User.sort_by(request.args.get('sort', 'created_on'),
-                                request.args.get('direction', 'desc'))
+                               request.args.get('direction', 'desc'))
         order_values = '{0} {1}'.format(sort_by[0], sort_by[1])
 
         # a search feature is provided if the client wants to implement one
         # thats what request.args.get('q') is
         paginated_users = User.query \
             .filter(User.search(request.args.get('q', ''))) \
-            .order_by(user.role.asc(), text(order_values)) \
+            .order_by(User.role.asc(), text(order_values)) \
             .paginate(page, page_size, True)
 
-        response = { 'users': paginated_users }
+        response = {'users': paginated_users}
         return response
 
     @route('/users/edit/<user_id>/', methods=['PATCH'])
     def edit_user(self, user_id):
-        """Admins can edit user accounts, for example if the username is 
+        """
+        Admins can edit user accounts, for example if the username is
         offensive/goes against guidelines or update their permissions
         """
         response = {'error': USER_NOT_FOUND}
@@ -76,9 +78,9 @@ class AdminView(V1FlaskView):
 
         # check for errors
         if not json_data:
-            response = { 'error': 'Invalid input.' }
+            response = {'error': 'Invalid input.'}
             return response, 400
-        
+
         data, errors = admin_edit_user_schema(json_data)
 
         if errors:
@@ -91,7 +93,7 @@ class AdminView(V1FlaskView):
                 'error': 'User is the last admin in the system.'
             }
             return response, 400
-        
+
         # is username being changed
         if user.username != data['username']:
             existing_username = User.find_by_identity(data['username'])
@@ -142,7 +144,7 @@ class AdminView(V1FlaskView):
 
         if user is None:
             return response, 404
-        
+
         user.delete()
 
         headers = {'Location': url_for('AdminView:users')}

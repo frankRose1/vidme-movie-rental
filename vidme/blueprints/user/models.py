@@ -74,7 +74,7 @@ class User(ResourceMixin, db.Model):
         ensure that there is always at least one admin.
 
         :param user: User being modified
-        :type user: User 
+        :type user: User
 
         :param new_role: Role the user is being changed to
         :type new_role: str
@@ -104,7 +104,7 @@ class User(ResourceMixin, db.Model):
         if not query:
             return ''
 
-        search_query = '%{0}%'.format(query) # %% partial words
+        search_query = '%{0}%'.format(query)  # %% partial words
         search_chain = (User.email.ilike(search_query),
                         User.username.ilike(search_query))
 

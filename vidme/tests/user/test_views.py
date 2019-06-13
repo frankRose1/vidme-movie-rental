@@ -3,6 +3,7 @@ from flask import url_for
 from lib.tests import assert_status_with_message, ViewTestMixin
 # from vidme.blueprints.user.models import User
 
+
 class TestRegister(ViewTestMixin):
     def test_register(self):
         """Register successfully"""
