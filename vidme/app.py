@@ -16,7 +16,7 @@ def create_app(settings_override=None):
     """
     Create a Flask app using the app factory pattern.
 
-    :param setting_override: Override app settings
+    :param settings_override: Override app settings
     :return: Flask app
     """
     app = Flask(__name__, instance_relative_config=True)
@@ -82,17 +82,18 @@ def jwt_callbacks():
         }
 
     @jwt.unauthorized_loader
-    def jwt_unauthorized_callback():
+    def jwt_unauthorized_callback(error):
         response = {
             'error': {
-                'message': 'Auth token was not provided.'
+                'message': 'Auth token was not provided.',
+                'detail': error
             }
         }
 
         return jsonify(response), 401
 
     @jwt.expired_token_loader
-    def jwt_expired_token_callback():
+    def jwt_expired_token_callback(error):
         response = {
             'error': {
                 'message': 'Auth token has expired.'

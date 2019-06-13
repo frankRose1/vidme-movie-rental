@@ -35,7 +35,7 @@ def init(with_testdb):
 
         if not database_exists(db_uri):
             create_database(db_uri)
-    
+
     return None
 
 

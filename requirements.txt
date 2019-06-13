@@ -21,5 +21,8 @@ flake8==2.5
 # CLI
 Click==6.4
 
+# Payments
+stripe==1.32.0
+
 # extensions and libraries
 pytz==2019.1

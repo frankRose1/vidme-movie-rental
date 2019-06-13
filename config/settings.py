@@ -41,3 +41,45 @@ JWT_ACCESS_COOKIE_PATH = '/'
 
 # Enable CSRF double submit protection (http://www.redotheweb.com/2015/11/09/api-security.html)
 JWT_COOKIE_CSRF_PROTECT = True
+
+# Stripe
+STRIPE_SECRET_KEY = os.environ['STRIPE_SECRET_KEY']
+STRIPE_PUBLISHABLE_KEY = os.environ['STRIPE_PUBLISHABLE_KEY']
+STRIPE_API_VERSION = '2016-03-07' # tell the stripe python project which version to use
+STRIPE_PLANS = {
+  '0': {
+    'id': 'bronze',
+    'name': 'Bronze',
+    'amount': 499,
+    'currency': 'usd',
+    'interval': 'month',
+    'interval_count': 1,
+    'trial_period_days': 14,
+    'statement_descriptor': 'VIDME BRONZE',
+    'metadata': {}
+  },
+  '1': {
+    'id': 'gold',
+    'name': 'Gold',
+    'amount': 999,
+    'currency': 'usd',
+    'interval': 'month',
+    'interval_count': 1,
+    'trial_period_days': 14,
+    'statement_descriptor': 'VIDME GOLD',
+    'metadata': {
+      'recommended': True
+    }
+  },
+  '2': {
+    'id': 'platinum',
+    'name': 'Platinum',
+    'amount': 1299,
+    'currency': 'usd',
+    'interval': 'month',
+    'interval_count': 1,
+    'trial_period_days': 14,
+    'statement_descriptor': 'VIDME PLATINUM',
+    'metadata': {}
+  },
+}
