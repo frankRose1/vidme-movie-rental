@@ -1,6 +1,69 @@
 import stripe
 
 
+class Subscription(object):
+    @classmethod
+    def create(cls, token=None, email=None, plan=None):
+        """
+        Send a request to the stripe API to create a new subscription.
+
+        :param email: User's email
+        :type email: str
+        :param plan: Plan to subscribe to
+        :type plan: str
+        :param token: One-time use token provided by stripe
+        :type token: str
+
+        :return: Stripe customer
+        """
+        params = {
+            'source': token,
+            'email': email,
+            'plan': plan
+        }
+
+        return stripe.Customer.create(**params)
+
+
+class Card(object):
+    @classmethod
+    def update(cls, customer_id, stripe_token=None):
+        """
+        Update an existing card through a customer.
+        API docs: https://stripe.com/docs/api/python#update_card
+
+        :param: customer_id: Stripe customer id
+        :type customer_id: int
+        :param stripe_token: Stripe token
+        :type stripe_token: str
+        :return: Stripe customer
+        """
+        customer = stripe.Customer.retrieve(customer_id)
+        # uses the new token to update the billing info
+        # will not effect the subscription at all
+        customer.source = stripe_token
+        return customer.save()
+
+
+class Product(object):
+
+    @classmethod
+    def retrieve(cls, product):
+        """
+        Retrieve an existing product.
+        API docs: https://stripe.com/docs/api#retrieve_product
+
+        :param product: Product identifier
+        :type product: str
+
+        :return: Stripe product
+        """
+        try:
+            return stripe.Product.retrieve(product)
+        except stripe.error.StripeError as e:
+            print(e)
+
+
 class Plan(object):
     """
     Plan class provides a means of interacting with the stripe API and will
@@ -22,60 +85,73 @@ class Plan(object):
         except stripe.error.StripeError as e:
             print(e)
 
-        @classmethod
-        def list(cls):
-            """
-            List all plans.
-            API docs: https://stripe.com/docs/api#list_plans
+    @classmethod
+    def list(cls):
+        """
+        List all plans.
+        API docs: https://stripe.com/docs/api#list_plans
 
-            :return: Stripe plans
-            """
-            try:
-                return stripe.Plan.all()
-            except stripe.error.StripeError as e:
-                print(e)
+        :return: Stripe plans
+        """
+        try:
+            return stripe.Plan.all()
+        except stripe.error.StripeError as e:
+            print(e)
 
-        @classmethod
-        def update(cls, id=None, name=None, metadata=None,
-                   statement_descriptor=None):
-            """
-            Update an existing plan.
+    @classmethod
+    def update(cls, id=None, name=None, metadata=None,
+               statement_descriptor=None):
+        """
+        Update an existing plan.
 
-            API docs: https://stripe.com/docs/api#update_plan
+        API docs: https://stripe.com/docs/api#update_plan
 
-            :param id: Plan identifier
-            :param name: Plan name
-            :param metadata: Additional data regarding the plan
-            :statement_descriptor: String to appear on CC statement
+        :param id: Plan identifier
+        :param name: Plan name
+        :param metadata: Additional data regarding the plan
+        :statement_descriptor: String to appear on CC statement
 
-            :return: Stripe plan
-            """
-            try:
-                plan = stripe.Plan.retrieve(id)
+        :return: Stripe plan
+        """
+        try:
+            plan = stripe.Plan.retrieve(id)
 
-                plan.name = name
-                plan.metadata = metadata
-                plan.statement_descriptor = statement_descriptor
-                return plan.save()
-            except stripe.error.StripeError as e:
-                print(e)
+            plan.nickname = name
+            plan.metadata = metadata
+            product_id = plan.product
+            updated_plan = plan.save()
 
-        @classmethod
-        def delete(cls, plan):
-            """
-            Delete an existing plan.
+            product = Product.retrieve(product_id)
+            product.name = name
+            product.statement_descriptor = statement_descriptor
 
-            API docs: https://stripe.com/docs/api#delete_plan
+            return updated_plan
+        except stripe.error.StripeError as e:
+            print(e)
 
-            :param plan: Plan identifier
-            :type plan: str
-            :return: Stripe plan object
-            """
-            try:
-                plan = stripe.Plan.retrieve(plan)
-                return plan.delete()
-            except stripe.error.StripeError as e:
-                print(e)
+    @classmethod
+    def delete(cls, plan):
+        """
+        Delete an existing plan.
+
+        API docs: https://stripe.com/docs/api#delete_plan
+
+        :param plan: Plan identifier
+        :type plan: str
+        :return: Stripe plan object
+        """
+        try:
+            # must delete plan before deleting a product
+            plan = stripe.Plan.retrieve(plan)
+            product_id = plan.product
+            deleted_plan = plan.delete()
+
+            product = Product.retrieve(product_id)
+            product.delete()
+
+            return deleted_plan
+        except stripe.error.StripeError as e:
+            print(e)
 
     @classmethod
     def create(cls, id=None, name=None, amount=None, currency=None,
@@ -107,15 +183,22 @@ class Plan(object):
         :return: Stripe plan
         """
         try:
+            # newer versions of stripes API require a Prouct associated
+            # with a plan
+            product = {
+                'name': name,
+                'statement_descriptor': statement_descriptor
+            }
+
             return stripe.Plan.create(id=id,
-                                      name=name,
+                                      nickname=name,
                                       amount=amount,
                                       currency=currency,
                                       interval=interval,
                                       interval_count=interval_count,
                                       trial_period_days=trial_period_days,
                                       metadata=metadata,
-                                      statement_descriptor=statement_descriptor
+                                      product=product
                                       )
         except stripe.error.StripeError as e:
             print(e)

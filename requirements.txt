@@ -1,11 +1,11 @@
 Flask==0.12
 
 # App server for both dev and prod
-gunicorn==19.4
+gunicorn==19.8.*
 
 # Database
-psycopg2==2.6.1
-Flask-SQLAlchemy==2.1
+psycopg2-binary==2.7.*
+Flask-SQLAlchemy==2.3.*
 SQLAlchemy-Utils==0.32
 
 # API
@@ -14,15 +14,15 @@ flask-marshmallow==0.7.0
 flask-jwt-extended==3.3
 
 # Testing and analysis
-pytest==2.9
-pytest-cov==2.2
-flake8==2.5
+pytest==3.5.*
+pytest-cov==2.5.*
+flake8==3.5.*
 
 # CLI
 Click==6.4
 
 # Payments
-stripe==1.32.0
+stripe==1.82.*
 
 # extensions and libraries
 pytz==2019.1

@@ -29,7 +29,7 @@ def create_app(settings_override=None):
     if settings_override:
         app.config.update(settings_override)
 
-    stripe.api_key = app.config.get('STRIPE_API_KEY')
+    stripe.api_key = app.config.get('STRIPE_SECRET_KEY')
     stripe.api_version = app.config.get('STRIPE_API_VERSION')
 
     # register the API views

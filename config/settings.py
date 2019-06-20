@@ -45,7 +45,7 @@ JWT_COOKIE_CSRF_PROTECT = True
 # Stripe
 STRIPE_SECRET_KEY = os.environ['STRIPE_SECRET_KEY']
 STRIPE_PUBLISHABLE_KEY = os.environ['STRIPE_PUBLISHABLE_KEY']
-STRIPE_API_VERSION = '2016-03-07' # tell the stripe python project which version to use
+STRIPE_API_VERSION = '2018-02-28' # tell the stripe python project which version to use
 STRIPE_PLANS = {
   '0': {
     'id': 'bronze',

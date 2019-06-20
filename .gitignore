@@ -3,3 +3,4 @@
 .cache
 .env
 *.pyc
+.pytest_cache
