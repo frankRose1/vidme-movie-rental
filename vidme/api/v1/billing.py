@@ -98,6 +98,17 @@ class SubscriptionView(V1FlaskView):
         }}
         return jsonify(response), 200
 
+    @handle_stripe_exceptions
+    @subscription_required
+    @jwt_required
+    def delete(self):
+        """Cancel a user's subscription."""
+        subscription = Subscription()
+        cancelled = subscription.cancel(user=current_user)
+
+        # TODO set headers to url_for("SubscriptionView:post")
+        return jsonify({}), 204
+
 
 class PlanView(V1FlaskView):
     """
@@ -134,10 +145,11 @@ class PlanView(V1FlaskView):
 
         current_plan = current_user.subscription.plan
         if current_plan == data['plan']:
-            response = {'error': 'New plan can\'t be the same as your old plan'}
+            response = {
+                'error': 'New plan can\'t be the same as your old plan'}
             return jsonify(response), 400
-        
+
         subscription = Subscription()
         updated = subscription.update(user=current_user, plan=data['plan'])
-        # send headers ? url_for(SubscriptionView:index)
+        # TODO set headers url_for("SubscriptionView:index")
         return jsonify({}), 204

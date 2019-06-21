@@ -42,7 +42,32 @@ class Subscription(ResourceMixin, db.Model):
                 return settings.STRIPE_PLANS[key]
 
         return None
-    
+
+    def cancel(self, user=None, discard_credit_card=True):
+        """Delete a user's subscription and stop any future billing.
+
+        :param user: User whos subscription is being deleted
+        :type user: User instance
+        :param discard_credit_card: Delete a user's related CreditCard
+        :type discard_credit_card: bool
+
+        :return: bool
+        """
+        PaymentSubscription.cancel(customer_id=user.payment_id)
+        # update the user model's billing info
+        user.payment_id = None
+        user.cancelled_subscription_on = datetime.datetime.now(pytz.utc)
+        db.session.add(user)
+        # delete the related subscription model
+        db.session.delete(user.subscription)
+
+        if discard_credit_card:
+            db.session.delete(user.subscription)
+
+        db.session.commit()
+
+        return True
+
     def update(self, user=None, plan=None):
         """
         Update the users subscription plan out of the available options:
@@ -53,7 +78,7 @@ class Subscription(ResourceMixin, db.Model):
         :param: Plan being updated
         :type plan: str
 
-        :return: None
+        :return: bool
         """
         # update the users sub plan on Stripe
         PaymentSubscription.update(customer_id=user.payment_id, plan=plan)
@@ -61,6 +86,8 @@ class Subscription(ResourceMixin, db.Model):
         user.subscription.plan = plan
         db.session.add(user.subscription)
         db.session.commit()
+
+        return True
 
     def create(self, user=None, name=None, plan=None, token=None):
         """

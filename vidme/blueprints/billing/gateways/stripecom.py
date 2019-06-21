@@ -38,7 +38,7 @@ class Subscription(object):
         :param plan: New plan to subscribe to
         :type plan: str
 
-        :return: Stripe subscriptions
+        :return: Stripe subscription object
         """
         customer = stripe.Customer.retrieve(customer_id)
         subscription_id = customer.subscriptions.data[0].id
@@ -47,7 +47,21 @@ class Subscription(object):
         subscription.plan = plan
         return subscription.save()
 
+    @classmethod
+    def cancel(cls, customer_id=None):
+        """
+        Send a request to the stripe API to cancel a user's subscription.
 
+        :param customer_id: User's payment ID. initally set when user subscribes
+        on our platform
+        :type customer_id: str
+
+        :return: Stripe subscription object
+        """
+        customer = stripe.Customer.retrieve(customer_id)
+        subscription_id = customer.subscriptions.data[0].id
+
+        return customer.subscriptions.retrieve(subscription_id).delete()
 
 class Card(object):
     @classmethod
