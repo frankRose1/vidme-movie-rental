@@ -24,6 +24,30 @@ class Subscription(object):
 
         return stripe.Customer.create(**params)
 
+    @classmethod
+    def update(cls, customer_id=None, plan=None):
+        """
+        Send a request to the stripe API to update an existing subscription
+        without interupting the users access to our platform or requiring the
+        user to re-enter their billing info.
+
+        :param customer_id: User's payment ID. initally set when user subscribes
+        on our platform
+        :type customer_id: str
+
+        :param plan: New plan to subscribe to
+        :type plan: str
+
+        :return: Stripe subscriptions
+        """
+        customer = stripe.Customer.retrieve(customer_id)
+        subscription_id = customer.subscriptions.data[0].id
+        subscription = customer.subscriptions.retrieve(subscription_id)
+        # change the old plan to the new one Stripe
+        subscription.plan = plan
+        return subscription.save()
+
+
 
 class Card(object):
     @classmethod

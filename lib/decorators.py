@@ -2,7 +2,11 @@ from functools import wraps
 
 import stripe
 from flask import jsonify
-from flask_jwt_extended import get_jwt_claims, verify_jwt_in_request
+from flask_jwt_extended import (
+    get_jwt_claims,
+    verify_jwt_in_request,
+    current_user
+)
 
 
 def admin_required(fn):
@@ -17,7 +21,7 @@ def admin_required(fn):
     """
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        verify_jwt_in_request() # will return a 401 if no token provided
+        verify_jwt_in_request()  # will return a 401 if no token provided
         claims = get_jwt_claims()
         if claims['role'] != 'admin':
             response = {
@@ -29,6 +33,28 @@ def admin_required(fn):
         else:
             return fn(*args, **kwargs)
     return wrapper
+
+
+def subscription_required(fn):
+    """
+    Ensures a user has an active subscription before accessing certain
+    endpoints
+
+    :param fn: Function being decorated
+    :type fn: Function
+    :return: Function
+    """
+    @wraps(fn)
+    def decorated_function(*args, **kwargs):
+        if not current_user.subscription:
+            response = {
+                'error': 'You need an active subscription to access this \
+                          resource'
+            }
+            return jsonify(response), 403
+        fn(*args, **kwargs)
+
+    return decorated_function
 
 
 def handle_stripe_exceptions(fn):

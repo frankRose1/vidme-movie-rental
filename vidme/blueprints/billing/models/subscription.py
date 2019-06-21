@@ -42,6 +42,25 @@ class Subscription(ResourceMixin, db.Model):
                 return settings.STRIPE_PLANS[key]
 
         return None
+    
+    def update(self, user=None, plan=None):
+        """
+        Update the users subscription plan out of the available options:
+        bronze, gold, or platiunum
+
+        :param user: User whos subscription is being updated
+        :type user: User instance
+        :param: Plan being updated
+        :type plan: str
+
+        :return: None
+        """
+        # update the users sub plan on Stripe
+        PaymentSubscription.update(customer_id=user.payment_id, plan=plan)
+        # update the user's sub plan in our DB
+        user.subscription.plan = plan
+        db.session.add(user.subscription)
+        db.session.commit()
 
     def create(self, user=None, name=None, plan=None, token=None):
         """

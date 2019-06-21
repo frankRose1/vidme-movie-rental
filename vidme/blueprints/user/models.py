@@ -1,13 +1,13 @@
 import datetime
-import pytz
-
-from flask import current_app
 from collections import OrderedDict
+
+import pytz
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_
 
 from lib.util_sqlalchemy import ResourceMixin, AwareDateTime
-# TODO also need to import the CreditCard and Invoice model
+# TODO also need to import the Invoice model
+from vidme.blueprints.billing.models.credit_card import CreditCard
 from vidme.blueprints.billing.models.subscription import Subscription
 from vidme.extensions import db
 
@@ -22,9 +22,10 @@ class User(ResourceMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     # relationships
+    credit_card = db.relationship(CreditCard, uselist=False, backref='users',
+                                  passive_deletes=True)
     subscription = db.relationship(Subscription, uselist=False,
-                                                 backref='users',
-                                                passive_deletes=True)
+                                   backref='users', passive_deletes=True)
 
     # Auth
     role = db.Column(db.Enum(*ROLE, name='role_types', native_enum=False),

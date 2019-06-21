@@ -27,13 +27,19 @@ class CreditCard(ResourceMixin, db.Model):
         super(CreditCard, self).__init__(**kwargs)
 
     @classmethod
-    def is_expiring_soon(cls, exp_date):
+    def is_expiring_soon(cls, compare_date=None, exp_date=None):
         """
         Determine if a a credit card is expiring soon.
 
-        :return: boolean
+        :param compare_date: Date to compare at
+        :type compare_date: date
+        :param exp_date: Expiration date
+        :type exp_date: date
+        :return: bool
         """
-        pass
+        return exp_date <= timedelta_months(
+            CreditCard.IS_EXPIRING_THRESHOLD_MONTHS, compare_date=compare_date
+        )
 
     @classmethod
     def extract_card_params(customer):
