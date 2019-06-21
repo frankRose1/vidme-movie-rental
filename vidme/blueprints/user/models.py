@@ -6,7 +6,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_
 
 from lib.util_sqlalchemy import ResourceMixin, AwareDateTime
-# TODO also need to import the Invoice model
 from vidme.blueprints.billing.models.credit_card import CreditCard
 from vidme.blueprints.billing.models.subscription import Subscription
 from vidme.extensions import db

@@ -40,12 +40,12 @@ class SubscriptionView(V1FlaskView):
 
         # if data is valid create a subscription
         subscription = Subscription()
-        created = subscription.create(user=current_user,
-                                      name=data['customer_name'],
-                                      plan=data['plan'],
-                                      token=data['stripe_token'])
+        subscription.create(user=current_user,
+                            name=data['customer_name'],
+                            plan=data['plan'],
+                            token=data['stripe_token'])
 
-        return jsonfiy({}), 201
+        return jsonify({}), 201
 
     @handle_stripe_exceptions
     @jwt_required
@@ -72,10 +72,10 @@ class SubscriptionView(V1FlaskView):
         # @handle_stripe_exceptions will catch any stripe errors that may
         # occur in update_payment_method
         subscription = Subscription()
-        updated = subscription.update_payment_method(user=current_user,
-                                                     credit_card=card,
-                                                     name=data['customer_name'],
-                                                     token=data['stripe_token'])
+        subscription.update_payment_method(user=current_user,
+                                           credit_card=card,
+                                           name=data['customer_name'],
+                                           token=data['stripe_token'])
         return jsonify({}), 200
 
     @jwt_required
@@ -104,22 +104,21 @@ class SubscriptionView(V1FlaskView):
     def delete(self):
         """Cancel a user's subscription."""
         subscription = Subscription()
-        cancelled = subscription.cancel(user=current_user)
+        subscription.cancel(user=current_user)
 
         # TODO set headers to url_for("SubscriptionView:post")
         return jsonify({}), 204
 
 
 class PlanView(V1FlaskView):
-    """
-    By providing the user's payment ID and the new plan, stripe can change the
-    plans easily. Stripe will also prorate the plans and will not charge 
-    additional fees if a user changes plans mid cycle.
-    """
 
     def index(self):
         """Show all of the available plans?"""
-        pass
+        plans = Subscription.get_all_plans()
+        response = {'data': {
+            'plans': plans
+        }}
+        return jsonify(response), 200
 
     @handle_stripe_exceptions
     @subscription_required
@@ -150,6 +149,6 @@ class PlanView(V1FlaskView):
             return jsonify(response), 400
 
         subscription = Subscription()
-        updated = subscription.update(user=current_user, plan=data['plan'])
+        subscription.update(user=current_user, plan=data['plan'])
         # TODO set headers url_for("SubscriptionView:index")
         return jsonify({}), 204

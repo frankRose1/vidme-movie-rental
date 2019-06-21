@@ -12,8 +12,8 @@ from vidme.blueprints.billing.gateways.stripecom import \
 
 
 class Subscription(ResourceMixin, db.Model):
-    __tablename__ 'subscriptions'
-    id = db.Column(db.Integer, priary_key=True)
+    __tablename__ = 'subscriptions'
+    id = db.Column(db.Integer, primary_key=True)
 
     # Relationships
     user_id = db.Column(db.Integer, db.ForeignKey('users.id',
@@ -27,6 +27,20 @@ class Subscription(ResourceMixin, db.Model):
     def __init__(self, **kwargs):
         # Call flask sql alchemy constructor
         super(Subscription, self).__init__(**kwargs)
+
+    @classmethod
+    def get_all_plans(cls):
+        """
+        Return a dict of all stripe plans in config.settings
+
+        :return: Dict
+        """
+        stripe_plans = settings.STRIPE_PLANS
+        plans = {}
+        for key in stripe_plans:
+            plans[stripe_plans[key].get('id')] = stripe_plans[key]
+
+        return plans
 
     @classmethod
     def get_plan(cls, plan):
@@ -134,36 +148,36 @@ class Subscription(ResourceMixin, db.Model):
 
     def update_payment_method(self, user=None, credit_card=None,
                               name=None, token=None):
-    """
-    Update the subscription
+        """
+        Update the subscription
 
-    :param user: User to modify
-    :type user: User instance
-    :param credit_card: Card to modify
-    :type credit_card: CreditCard instance
-    :param name: User's billing name
-    :type name: str
-    :param token: Token provided by stripe
-    :type token: str
-    :return: bool
-    """
-    if token is None:
-        return False
+        :param user: User to modify
+        :type user: User instance
+        :param credit_card: Card to modify
+        :type credit_card: CreditCard instance
+        :param name: User's billing name
+        :type name: str
+        :param token: Token provided by stripe
+        :type token: str
+        :return: bool
+        """
+        if token is None:
+            return False
 
-    # update the payment info on stripes API
-    customer = PaymentCard.update(user.payment_id, token)
+        # update the payment info on stripes API
+        customer = PaymentCard.update(user.payment_id, token)
 
-    user.name = name
+        user.name = name
 
-    # Update the CC
-    new_card = CreditCard.extract_card_params(customer)
-    credit_card.brand = new_card.get('brand')
-    credit_card.last4 = new_card.get('last4')
-    credit_card.exp_date = new_card.get('exp_date')
-    credit_card.is_expiring = new_card.get('is_expiring')
+        # Update the CC
+        new_card = CreditCard.extract_card_params(customer)
+        credit_card.brand = new_card.get('brand')
+        credit_card.last4 = new_card.get('last4')
+        credit_card.exp_date = new_card.get('exp_date')
+        credit_card.is_expiring = new_card.get('is_expiring')
 
-    db.session.add(user)
-    db.session.add(credit_card)
-    db.session.commit()
+        db.session.add(user)
+        db.session.add(credit_card)
+        db.session.commit()
 
-    return True
+        return True

@@ -31,8 +31,8 @@ class Subscription(object):
         without interupting the users access to our platform or requiring the
         user to re-enter their billing info.
 
-        :param customer_id: User's payment ID. initally set when user subscribes
-        on our platform
+        :param customer_id: User's payment ID. initally set when user
+        subscribes on our platform
         :type customer_id: str
 
         :param plan: New plan to subscribe to
@@ -52,8 +52,8 @@ class Subscription(object):
         """
         Send a request to the stripe API to cancel a user's subscription.
 
-        :param customer_id: User's payment ID. initally set when user subscribes
-        on our platform
+        :param customer_id: User's payment ID. initally set when user
+        subscribes on our platform
         :type customer_id: str
 
         :return: Stripe subscription object
@@ -62,6 +62,7 @@ class Subscription(object):
         subscription_id = customer.subscriptions.data[0].id
 
         return customer.subscriptions.retrieve(subscription_id).delete()
+
 
 class Card(object):
     @classmethod

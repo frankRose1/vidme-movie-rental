@@ -3,8 +3,8 @@ from functools import wraps
 import stripe
 from flask import jsonify
 from flask_jwt_extended import (
-    get_jwt_claims,
     verify_jwt_in_request,
+    get_jwt_claims,
     current_user
 )
 
@@ -60,8 +60,8 @@ def subscription_required(fn):
 def handle_stripe_exceptions(fn):
     """
     The stripe API can throw many different errors regarding the user's
-    CC info. This decorator will handle various exceptions and provide a more
-    informative response to the client, rather than returning a 500.
+    CC/billing info. This decorator will handle various exceptions and provide
+    a more informative response to the client, rather than returning a 500.
 
     :param fn: Function being wrapped
     :type fn: Function

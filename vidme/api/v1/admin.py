@@ -2,12 +2,13 @@ from flask import request, url_for
 from flask_classful import route
 from sqlalchemy import text
 
-# from lib.decorators import admin_required
 from vidme.api.v1 import V1FlaskView
 from vidme.blueprints.admin.models import Dashboard
-from vidme.blueprints.admin.schemas import admin_edit_user_schema, user_schema
-from vidme.blueprints.user.models import User
 from lib.representations import output_json
+from lib.decorators import admin_required, handle_stripe_exceptions
+from vidme.blueprints.billing.models.subscription import Subscription
+from vidme.blueprints.user.models import User
+from vidme.blueprints.admin.schemas import admin_edit_user_schema, user_schema
 
 
 USER_NOT_FOUND = 'User not found.'
@@ -17,18 +18,48 @@ class AdminView(V1FlaskView):
 
     representations = {'application/json': output_json}
 
-    # @admin_required
+    @admin_required
     def index(self):
         """
-        Count and group(by role) all users in the system. Will show a
-        summary of total users in the DB as well as what percentage are members
-        and admins.
+        Count and group(by role) all users and subscriptions in the system.
+        Will show a total and allow the client to calculate percentages
+        (e.g which percent of users are members vs admin).
         """
         group_and_count_users = Dashboard.group_and_count_users()
-        response = group_and_count_users
+        group_and_count_plans = Dashboard.group_and_count_plans()
+        response = {'data': {
+            'group_and_count_users': group_and_count_users,
+            'group_and_count_plans': group_and_count_plans
+        }}
         return response
 
+    @route('/cancel_subscription/<user_id>', methods=['DELETE'])
+    @handle_stripe_exceptions
+    @admin_required
+    def cancel_subscription(self, user_id):
+        """Admins can canel a user's subscription"""
+        response = {'error': USER_NOT_FOUND}
+
+        try:
+            user_id = int(user_id)
+        except ValueError:
+            return response, 404
+
+        user = User.query.filter(User.id == user_id).first()
+
+        if user is None:
+            return response, 404
+
+        subscription = Subscription()
+        subscription.cancel(user=user)
+        response = {'data': {
+            'deleted': True,
+            'message': 'User\'s subscription has been cancelled.'
+        }}
+        return response, 200
+
     @route('/users/', methods=['GET'])
+    @admin_required
     def users(self):
         """
         Use pagination to list out users in the database
@@ -55,6 +86,7 @@ class AdminView(V1FlaskView):
         return response
 
     @route('/users/edit/<user_id>/', methods=['PATCH'])
+    @admin_required
     def edit_user(self, user_id):
         """
         Admins can edit user accounts, for example if the username is
@@ -110,6 +142,7 @@ class AdminView(V1FlaskView):
         return '', 204, headers
 
     @route('/users/<user_id>/', methods=['GET'])
+    @admin_required
     def get_user(self, user_id):
         """Allows an admin to fetch specific user data
         """
@@ -130,6 +163,7 @@ class AdminView(V1FlaskView):
         return result.data
 
     @route('/users/delete/<user_id>/', methods=['DELETE'])
+    @admin_required
     def delete_user(self, user_id):
         """Admins can delete user accounts
         """

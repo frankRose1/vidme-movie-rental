@@ -1,13 +1,23 @@
 from sqlalchemy import func
 
 from vidme.blueprints.user.models import User, db
+from vidme.blueprints.billing.models.subscription import Subscription
 
 
 class Dashboard(object):
     """
-    This class will help with displaying certain data regarding users, as well
-    as allowing admins to update modify accounts
+    This class will help with displaying certain data regarding users and
+    plans.
     """
+    @classmethod
+    def group_and_count_plans(cls):
+        """
+        Perform a group by/count on all plans
+
+        :return: dict
+        """
+        return Dashboard._group_and_count(Subscription, Subscription.plan)
+
     @classmethod
     def group_and_count_users(cls):
         """

@@ -11,9 +11,9 @@ class CreditCard(ResourceMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     # Relationships
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id',
-                                                   onupdate='CASCADE',
-                                                   ondelete='CASCADE'),
+    user_id = db.Column(db.Integer,
+                        db.ForeignKey('users.id', onupdate='CASCADE',
+                                      ondelete='CASCADE'),
                         index=True, nullable=False)
 
     # Card details

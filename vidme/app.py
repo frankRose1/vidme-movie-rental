@@ -6,7 +6,7 @@ from vidme.blueprints.user.models import User
 from vidme.api.auth import AuthView
 from vidme.api.v1.user import UsersView
 from vidme.api.v1.admin import AdminView
-from vidme.api.v1.billing import SubscriptionView
+from vidme.api.v1.billing import SubscriptionView, PlanView
 
 from vidme.extensions import (
     jwt,
@@ -38,6 +38,7 @@ def create_app(settings_override=None):
     UsersView.register(app)
     AdminView.register(app)
     SubscriptionView.register(app)
+    PlanView.register(app)
 
     # add extensions
     extensions(app)

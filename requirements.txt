@@ -11,7 +11,7 @@ SQLAlchemy-Utils==0.32
 # API
 flask-classful==0.14
 flask-marshmallow==0.7.0
-flask-jwt-extended==3.3
+flask-jwt-extended==3.18.*
 
 # Testing and analysis
 pytest==3.5.*
