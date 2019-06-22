@@ -64,6 +64,21 @@ class Subscription(object):
         return customer.subscriptions.retrieve(subscription_id).delete()
 
 
+class Invoice(object):
+    @classmethod
+    def upcoming(cls, customer_id):
+        """
+        Return the upcoming invoice item for a specific user.
+
+        API docs: https://stripe.com/docs/api#retrieve_customer_invoice
+
+        :param customer_id: Customer's stripe ID
+        :type customer_id: int
+        :return: Stripe Invoice
+        """
+        return stripe.Invoice.upcoming(customer=customer_id)
+
+
 class Card(object):
     @classmethod
     def update(cls, customer_id, stripe_token=None):

@@ -7,6 +7,7 @@ from flask_jwt_extended import jwt_required, current_user
 
 from vidme.api.v1 import V1FlaskView
 from vidme.blueprints.billing.models.subscription import Subscription
+from vidme.blueprints.billing.models.invoice import Invoice
 from vidme.blueprints.billing.schemas import (
     create_edit_subscription_schema,
     billing_info_schema
@@ -14,7 +15,7 @@ from vidme.blueprints.billing.schemas import (
 from lib.decorators import handle_stripe_exceptions, subscription_required
 
 
-class SubscriptionView(V1FlaskView):
+class SubscriptionsView(V1FlaskView):
 
     @handle_stripe_exceptions
     @jwt_required
@@ -110,7 +111,7 @@ class SubscriptionView(V1FlaskView):
         return jsonify({}), 204
 
 
-class PlanView(V1FlaskView):
+class PlansView(V1FlaskView):
 
     def index(self):
         """Show all of the available plans?"""
@@ -152,3 +153,29 @@ class PlanView(V1FlaskView):
         subscription.update(user=current_user, plan=data['plan'])
         # TODO set headers url_for("SubscriptionView:index")
         return jsonify({}), 204
+
+
+class InvoicesView(V1FlaskView):
+    @handle_stripe_exceptions
+    @jwt_required
+    def index(self):
+        """
+        Return the user's previous invoices, and the upcoming invoice
+        (provided by Stripe). Upcoming invoice could be null if a user has
+        unsubbed.
+        """
+        invoices = Invoice.billing_history(user=current_user)
+
+        if current_user.subscription:
+            # get the upcoming invoice from stripe
+            upcoming_invoice = Invoice.upcoming(
+                                          customer_id=current_user.payment_id)
+        else:
+            upcoming_invoice = None
+
+        response = {'data': {
+            'invoices': invoices,
+            'upcoming_invoice': upcoming_invoice
+        }}
+
+        return jsonify(response), 200

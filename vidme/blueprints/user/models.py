@@ -8,6 +8,7 @@ from sqlalchemy import or_
 from lib.util_sqlalchemy import ResourceMixin, AwareDateTime
 from vidme.blueprints.billing.models.credit_card import CreditCard
 from vidme.blueprints.billing.models.subscription import Subscription
+from vidme.blueprints.billing.models.invoice import Invoice
 from vidme.extensions import db
 
 
@@ -25,6 +26,7 @@ class User(ResourceMixin, db.Model):
                                   passive_deletes=True)
     subscription = db.relationship(Subscription, uselist=False,
                                    backref='users', passive_deletes=True)
+    invoices = db.relationship(Invoice, backref='users', passive_deletes=True)
 
     # Auth
     role = db.Column(db.Enum(*ROLE, name='role_types', native_enum=False),
