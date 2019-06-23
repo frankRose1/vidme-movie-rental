@@ -15,16 +15,30 @@ class CreateEditSubscriptionSchema(marshmallow.Schema):
         required=True, validate=validate.Length(min=1, max=255))
 
 
-class BillingInfoSchema(marshmallow.Schema):
+class CreditCardSchema(marshmallow.Schema):
     """
-    Billing info is different than the incoming data to set up a subscription.
+    CC info is different than the incoming data to set up a subscription.
     The credit card model will store info such as last 4 digits, CC brand, and
     expiration date.
     """
     class Meta:
         fields = ('id', 'created_on', 'updated_on', 'exp_date', 'is_expiring',
-                  'last4', 'brand')
+                  'last4', 'brand', 'user_id')
+
+
+class SubscriptionSchema(marshmallow.Schema):
+    class Meta:
+        fields = ('id', 'created_on', 'updated_on', 'plan')
+
+
+class InvoiceSchema(marshmallow.Schema):
+    class Meta:
+        fields = ('id', 'created_on', 'plan', 'receipt_number', 'description',
+                  'period_start_on', 'period_end_on', 'currency', 'tax',
+                  'tax_percent', 'total', 'brand', 'last4', 'exp_date')
 
 
 create_edit_subscription_schema = CreateEditSubscriptionSchema()
-billing_info_schema = BillingInfoSchema()
+credit_card_schema = CreditCardSchema()
+subscription_schema = SubscriptionSchema()
+invoices_schema = InvoiceSchema(many=True)

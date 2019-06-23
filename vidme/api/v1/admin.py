@@ -9,7 +9,12 @@ from lib.decorators import admin_required, handle_stripe_exceptions
 from vidme.blueprints.billing.models.subscription import Subscription
 from vidme.blueprints.billing.models.invoice import Invoice
 from vidme.blueprints.user.models import User
-from vidme.blueprints.admin.schemas import admin_edit_user_schema, user_schema
+from vidme.blueprints.admin.schemas import (
+    admin_edit_user_schema,
+    users_schema,
+    user_detail_schema
+)
+from vidme.blueprints.billing.schemas import invoices_schema
 
 
 USER_NOT_FOUND = 'User not found.'
@@ -59,7 +64,7 @@ class AdminView(V1FlaskView):
         }}
         return response, 200
 
-    @route('/users/', methods=['GET'])
+    @route('/users', methods=['GET'])
     @admin_required
     def users(self):
         """
@@ -83,10 +88,17 @@ class AdminView(V1FlaskView):
             .order_by(User.role.asc(), text(order_values)) \
             .paginate(page, page_size, True)
 
-        response = {'users': paginated_users}
+        dumped_users = users_schema.dump(paginated_users.items)
+        response = {'data': {
+            'users': dumped_users.data,
+            'has_next': paginated_users.has_next,
+            'has_prev': paginated_users.has_prev,
+            'prev_num': paginated_users.prev_num,
+            'next_num': paginated_users.next_num,
+        }}
         return response
-    
-    @route('/users/<user_id>/', methods=['GET'])
+
+    @route('/users/<user_id>', methods=['GET'])
     @handle_stripe_exceptions
     @admin_required
     def get_user(self, user_id):
@@ -103,25 +115,24 @@ class AdminView(V1FlaskView):
 
         if user is None:
             return response, 404
-        
+
         invoices = Invoice.billing_history(user=user)
         if user.subscription:
             # get the upcoming invoice from Stripe
             upcoming = Invoice.upcoming(customer_id=user.payment_id)
         else:
             upcoming = None
-        # TODO see app.py for notes on schemas, Will need to dump invoices,
-        # but not upcoming since its alread a dict. Also CC is attached to the user
-        # should we make another schema for that too?
-        result = user_schema.dump(user)
+
+        dumped_user = user_detail_schema.dump(user)
+        dumped_invoices = invoices_schema.dump(invoices_schema)
         response = {'data': {
-            'user': result.data,
-            'invoices': invoices,
-            'upcoming': upcoming
+            'user': dumped_user.data,
+            'invoices': dumped_invoices.data,
+            'upcoming_invoice': upcoming
         }}
         return response
 
-    @route('/users/edit/<user_id>/', methods=['PATCH'])
+    @route('/users/edit/<user_id>', methods=['PATCH'])
     @admin_required
     def edit_user(self, user_id):
         """
@@ -177,7 +188,7 @@ class AdminView(V1FlaskView):
         headers = {'Location': url_for('AdminView:get_user', user_id=user.id)}
         return '', 204, headers
 
-    @route('/users/delete/<user_id>/', methods=['DELETE'])
+    @route('/users/delete/<user_id>', methods=['DELETE'])
     @admin_required
     def delete_user(self, user_id):
         """Admins can delete user accounts

@@ -18,12 +18,6 @@ from vidme.extensions import (
     db,
     marshmallow
 )
-# TODO NEED schemas to DUMP data in admin views, such as invoices, and users
-# Maybe set up the relevant schemas in the related blueprints and use them
-# the InvoicesSchema will be used in both the admin view(to let an
-# admin see a user's billing history) and in the billing API so that customers
-# may see their own history. Maybe use the existing user schema and dont
-# include the invoices field on that schema. (CCSchema may be needed too)
 
 
 def create_app(settings_override=None):

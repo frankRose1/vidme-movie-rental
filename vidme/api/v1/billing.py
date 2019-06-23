@@ -10,7 +10,9 @@ from vidme.blueprints.billing.models.subscription import Subscription
 from vidme.blueprints.billing.models.invoice import Invoice
 from vidme.blueprints.billing.schemas import (
     create_edit_subscription_schema,
-    billing_info_schema
+    credit_card_schema,
+    subscription_schema,
+    invoices_schema
 )
 from lib.decorators import handle_stripe_exceptions, subscription_required
 
@@ -60,7 +62,6 @@ class SubscriptionsView(V1FlaskView):
             }
             return jsonify(response), 404
 
-        # validate incoming data
         json_data = request.get_json()
         data, errors = create_edit_subscription_schema.load(json_data)
 
@@ -92,9 +93,9 @@ class SubscriptionsView(V1FlaskView):
             return jsonify(response), 404
 
         active_plan = Subscription.get_plan(current_user.subscription.plan)
-        billing_info = billing_info_schema.dump(current_user.credit_card)
+        credit_card = credit_card_schema.dump(current_user.credit_card)
         response = {'data': {
-            'billing_info': billing_info.data,
+            'credit_card': credit_card.data,
             'active_plan': active_plan
         }}
         return jsonify(response), 200
@@ -114,7 +115,7 @@ class SubscriptionsView(V1FlaskView):
 class PlansView(V1FlaskView):
 
     def index(self):
-        """Show all of the available plans?"""
+        """Show all of the available plans"""
         plans = Subscription.get_all_plans()
         response = {'data': {
             'plans': plans
@@ -169,12 +170,13 @@ class InvoicesView(V1FlaskView):
         if current_user.subscription:
             # get the upcoming invoice from stripe
             upcoming_invoice = Invoice.upcoming(
-                                          customer_id=current_user.payment_id)
+                customer_id=current_user.payment_id)
         else:
             upcoming_invoice = None
 
+        dumped_invoices = invoices_schema.dump(invoices)
         response = {'data': {
-            'invoices': invoices,
+            'invoices': dumped_invoices.data,
             'upcoming_invoice': upcoming_invoice
         }}
 

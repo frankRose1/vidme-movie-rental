@@ -1,6 +1,10 @@
 from marshmallow import fields, ValidationError, validate
 
 from vidme.extensions import marshmallow
+from vidme.blueprints.billing.schemas import (
+    CreditCardSchema,
+    SubscriptionSchema
+)
 
 USERNAME_MESSAGE = 'Username must be letters, numbers and underscores only.'
 
@@ -26,13 +30,28 @@ class AdminEditUserschema(marshmallow.Schema):
 
 
 class UserSchema(marshmallow.Schema):
-    """For dumping user data in the admin view."""
+    """For dumping a list of user data in the admin view."""
+    # Nested schema for billing info/ subscription? TO show if a user has an
+    #  account and to sort the results on the client
     class Meta:
-        fields = ('id', 'email', 'username', 'role', 'sign_in_count',
+        fields = ('id', 'email', 'name', 'role', 'sign_in_count',
+                  'last_sign_in_on', 'created_on')
+
+
+class UserDetailSchema(marshmallow.Schema):
+    """
+    For dumping more detailed user info, inlcuding CC and billing information
+    """
+    class Meta:
+        fields = ('id', 'email', 'username', 'name', 'role', 'sign_in_count',
                   'current_sign_in_on', 'current_sign_in_ip', 'updated_on',
-                  'last_sign_in_on', 'last_sign_in_ip', 'created_on')
+                  'last_sign_in_on', 'last_sign_in_ip', 'created_on',
+                  'credit_card', 'subscription',)
+    # Use nested Schemas
+    credit_card = fields.Nested(CreditCardSchema)
+    subscription = fields.Nested(SubscriptionSchema)
 
 
 admin_edit_user_schema = AdminEditUserschema()
-user_schema = UserSchema()
 users_schema = UserSchema(many=True)
+user_detail_schema = UserDetailSchema()
