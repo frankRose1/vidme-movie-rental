@@ -7,6 +7,7 @@ from vidme.blueprints.admin.models import Dashboard
 from lib.representations import output_json
 from lib.decorators import admin_required, handle_stripe_exceptions
 from vidme.blueprints.billing.models.subscription import Subscription
+from vidme.blueprints.billing.models.invoice import Invoice
 from vidme.blueprints.user.models import User
 from vidme.blueprints.admin.schemas import admin_edit_user_schema, user_schema
 
@@ -84,6 +85,41 @@ class AdminView(V1FlaskView):
 
         response = {'users': paginated_users}
         return response
+    
+    @route('/users/<user_id>/', methods=['GET'])
+    @handle_stripe_exceptions
+    @admin_required
+    def get_user(self, user_id):
+        """Allows an admin to fetch specific user data
+        """
+        response = {'error': USER_NOT_FOUND}
+
+        try:
+            user_id = int(user_id)
+        except ValueError:
+            return response, 404
+
+        user = User.query.filter(User.id == user_id).first()
+
+        if user is None:
+            return response, 404
+        
+        invoices = Invoice.billing_history(user=user)
+        if user.subscription:
+            # get the upcoming invoice from Stripe
+            upcoming = Invoice.upcoming(customer_id=user.payment_id)
+        else:
+            upcoming = None
+        # TODO see app.py for notes on schemas, Will need to dump invoices,
+        # but not upcoming since its alread a dict. Also CC is attached to the user
+        # should we make another schema for that too?
+        result = user_schema.dump(user)
+        response = {'data': {
+            'user': result.data,
+            'invoices': invoices,
+            'upcoming': upcoming
+        }}
+        return response
 
     @route('/users/edit/<user_id>/', methods=['PATCH'])
     @admin_required
@@ -140,27 +176,6 @@ class AdminView(V1FlaskView):
 
         headers = {'Location': url_for('AdminView:get_user', user_id=user.id)}
         return '', 204, headers
-
-    @route('/users/<user_id>/', methods=['GET'])
-    @admin_required
-    def get_user(self, user_id):
-        """Allows an admin to fetch specific user data
-        """
-        response = {'error': USER_NOT_FOUND}
-
-        try:
-            user_id = int(user_id)
-        except ValueError:
-            return response, 404
-
-        user = User.query.filter(User.id == user_id).first()
-
-        if user is None:
-            return response, 404
-
-        result = user_schema.dump(user)
-
-        return result.data
 
     @route('/users/delete/<user_id>/', methods=['DELETE'])
     @admin_required

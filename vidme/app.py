@@ -4,15 +4,26 @@ import stripe
 
 from vidme.blueprints.user.models import User
 from vidme.api.auth import AuthView
+from vidme.api.stripe_webhook import StripeWebhookView
 from vidme.api.v1.user import UsersView
 from vidme.api.v1.admin import AdminView
-from vidme.api.v1.billing import SubscriptionView, PlanView
+from vidme.api.v1.billing import (
+    SubscriptionsView,
+    PlansView,
+    InvoicesView
+)
 
 from vidme.extensions import (
     jwt,
     db,
     marshmallow
 )
+# TODO NEED schemas to DUMP data in admin views, such as invoices, and users
+# Maybe set up the relevant schemas in the related blueprints and use them
+# the InvoicesSchema will be used in both the admin view(to let an
+# admin see a user's billing history) and in the billing API so that customers
+# may see their own history. Maybe use the existing user schema and dont
+# include the invoices field on that schema. (CCSchema may be needed too)
 
 
 def create_app(settings_override=None):
@@ -35,10 +46,12 @@ def create_app(settings_override=None):
 
     # register the API views
     AuthView.register(app)
+    StripeWebhookView.register(app)
     UsersView.register(app)
     AdminView.register(app)
-    SubscriptionView.register(app)
-    PlanView.register(app)
+    SubscriptionsView.register(app)
+    PlansView.register(app)
+    InvoicesView.register(app)
 
     # add extensions
     extensions(app)

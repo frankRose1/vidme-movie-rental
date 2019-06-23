@@ -1,6 +1,23 @@
 import stripe
 
 
+class Event(object):
+    @classmethod
+    def retrieve(cls, event_id):
+        """
+        Retrieve an event. This is an attempt to protect us from potentially
+        malicious events not sent from stripe. If the event ID is valid,
+        stripe will have record of this on their end.
+
+        API docs: https://stripe.com/docs/api#retrieve_event
+
+        :param event_id: Stripe Event ID
+        :type event_id: int
+        :return: Stripe Event
+        """
+        return stripe.Event.retrieve(event_id)
+
+
 class Subscription(object):
     @classmethod
     def create(cls, token=None, email=None, plan=None):

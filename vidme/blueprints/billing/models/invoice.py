@@ -83,3 +83,62 @@ class Invoice(ResourceMixin, db.Model):
         invoice = PaymentInvoice.upcoming(customer_id)
 
         return Invoice._parse_from_api(invoice)
+
+    @classmethod
+    def parse_from_event(cls, payload):
+        """
+        From a Stripe event, parse and return all of the data needed to save
+        an Invoice locally.
+
+        :return: dict
+        """
+        data = payload['data']['object']
+        plan_info = data['lines']['data'][0]['plan']
+
+        period_start_on = datetime.datetime.utcfromtimestamp(
+            data['lines']['data'][0]['period']['start']).date()
+        period_end_on = datetime.datetime.utcfromtimestamp(
+            data['lines']['data'][0]['period']['end']).date()
+
+        invoice = {
+            'payment_id': data['customer'],
+            'plan': plan_info['name'],
+            'receipt_number': data['receipt_number'],
+            'description': plan_info['statement_descriptor'],
+            'period_start_on': period_start_on,
+            'period_end_on': period_end_on,
+            'currency': data['currency'],
+            'tax': data['tax'],
+            'tax_percent': data['tax_percent'],
+            'total': data['total']
+        }
+        return invoice
+
+    @classmethod
+    def prepare_and_save(cls, parsed_event):
+        """
+        Potentially save an invoice after the necessary fields have been
+        parsed from the stripe webhook event "invoice.created".
+        :param parsed_event: Invoice data to be saved
+        :type parsed_event: dict
+        :return: User instance
+        """
+        # Avoid circular imports
+        from vidme.blueprints.user.models import User
+
+        # Only save the invoice if the user is valid
+        id = parsed_event.get('payment_id')
+        user = User.query.filter((User.payment_id == id)).first()
+
+        if user and user.credit_card:
+            parsed_event['user_id'] = user.id
+            parsed_event['brand'] = user.credit_card.brand
+            parsed_event['last4'] = user.credit_card.last4
+            parsed_event['exp_date'] = user.credit_card.exp_date
+
+            del parsed_event['payment_id']
+
+            invoice = Invoice(**parsed_event)
+            invoice.save()
+
+        return user
