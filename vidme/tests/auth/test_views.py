@@ -44,3 +44,12 @@ class TestAuthenticate(ViewTestMixin):
         }
         response = self.client.post(url_for('AuthView:post'), json=data)
         assert_status_with_message(401, response, 'Invalid credentials.')
+
+    def test_authenticate(self):
+        """Return an access token for valid crdentials"""
+        data = {
+            'identity': 'testAdmin1',
+            'password': 'password'
+        }
+        response = self.client.post(url_for('AuthView:post'), json=data)
+        assert response.status_code == 200
