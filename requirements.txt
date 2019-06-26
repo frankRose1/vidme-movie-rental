@@ -18,6 +18,7 @@ flask-jwt-extended==3.18.*
 pytest==3.5.*
 pytest-cov==2.5.*
 flake8==3.5.*
+mock==2.0.*
 
 # Payments
 stripe==1.82.*

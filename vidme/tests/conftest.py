@@ -1,9 +1,23 @@
+import datetime
+
 import pytest
+import pytz
+from mock import Mock
 
 from config import settings
 from vidme.app import create_app
 from vidme.extensions import db as _db
+from lib.util_datetime import timedelta_months
 from vidme.blueprints.user.models import User
+from vidme.blueprints.billing.models.credit_card import CreditCard
+from vidme.blueprints.billing.models.subscription import Subscription
+from vidme.blueprints.billing.gateways.stripecom import \
+    Event as PaymentEvent
+from vidme.blueprints.billing.gateways.stripecom import Card as PaymentCard
+from vidme.blueprints.billing.gateways.stripecom import \
+    Subscription as PaymentSubscription
+from vidme.blueprints.billing.gateways.stripecom import \
+    Invoice as PaymentInvoice
 
 
 @pytest.yield_fixture(scope='session')
@@ -117,3 +131,103 @@ def users(db):
     db.session.commit()
 
     return db
+
+
+@pytest.fixture(scope='function')
+def credit_cards(db):
+    """
+    Create credit card fixtures.
+
+    :param db: Pytest fixture
+    :return: SQLAlchemy database session
+    """
+    db.session.query(CreditCard).delete()
+
+    may_29_2019 = datetime.date(2019, 5, 29)
+    june_29_2019 = datetime.datetime(2019, 6, 29, 0, 0, 0)
+    june_29_2019 = pytz.utc.localize(june_29_2019)
+
+    credit_cards = [
+        {
+            'user_id': 1,
+            'brand': 'Visa',
+            'last4': 4242
+            'exp_date': june_29_2019
+        },
+        {
+            'user_id': 1,
+            'brand': 'Visa',
+            'last4': 4242
+            'exp_date': timedelta_months(12, may_29_2019)
+        },
+    ]
+
+    for card in credit_cards:
+        db.session.add(CreditCard(**card))
+
+    db.session.commit()
+    return db
+
+
+@pytest.fixture(scope='function')
+def subscriptions(db):
+    """
+    Create credit card fixtures.
+
+    :param db: Pytest fixture
+    :return: SQLAlchemy database session   
+    """
+    subscriber = User.find_by_identity('subscriber@local.host')
+    if subscriber:
+        subscriber.delete()
+    db.session.Query.delete(Subscription).delete()
+
+    params = {
+        'role': 'admin',
+        'email': 'subscriber@local.host',
+        'username': 'firstSub1'
+        'name': 'Subby',
+        'payment_id': 'cus_00',
+        'password': 'password'
+    }
+
+    subscriber = User(**params)
+    # User needs to be commited to be able to assign a subscription to it
+    db.session.add(subscriber)
+    db.session.commit()
+
+    # Create a subscription
+    params = {
+        'user_id': subscriber.id,
+        'plan': 'gold'
+    }
+    subscription = Subscription(**params)
+    db.session.add(subscription)
+
+    # Create the users CC
+    params = {
+        'user_id': subscriber.id,
+        'brand': 'Visa',
+        'last4': 4242,
+        'exp_date': datetime.date(2019, 6, 1)
+    }
+    credit_card = CreditCard(**params)
+    db.session.add(credit_card)
+
+    db.session.commit()
+
+    return db
+
+
+@pytest.fixture(scope='session')
+def mock_stripe():
+    """
+    Mock all of Stripe's API calls.
+    """
+    PaymentEvent.retrieve = Mock(return_value={})
+    PaymentCard.update = Mock(return_value={})
+    PaymentSubscription.create = Mock(return_value={})
+    PaymentSubscription.update = Mock(return_value={})
+    PaymentSubscription.cancel = Mock(return_value={})
+
+    upcoming_invoice_api = {}
