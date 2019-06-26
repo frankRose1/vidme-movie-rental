@@ -1,7 +1,7 @@
 import pytest
 
 
-def assert_status_with_message(status_code=200, reponse=None, message=None):
+def assert_status_with_message(status_code=200, response=None, message=None):
     """
     Check to see if a message is contained within a response
 
@@ -17,18 +17,17 @@ def assert_status_with_message(status_code=200, reponse=None, message=None):
     :return: None
     """
     assert response.status_code == status_code
-    assert message in str(reponse.data)
+    assert message in str(response.data)
 
 
 class ViewTestMixin(object):
     """
-    Automatically load in a client. To be used on view tests.
+    Automatically load in a session and client. To be used on view tests.
     """
 
-    # autouse means that we dont have to explictly use these fixtures
-    # and class that inherits ViewTestMixin will have a "self.client"
     @pytest.fixture(autouse=True)
-    def set_common_fixtures(self, client):
+    def set_common_fixtures(self, session, client):
+        self.session = session
         self.client = client
 
     # TODO add an authenticate method in the future

@@ -84,7 +84,7 @@ def handle_stripe_exceptions(fn):
                 'error': 'Authentication with our payment gateway failed.'
             }
             return jsonify(response), 400
-        except stripe.error.APIConectionError:
+        except stripe.error.APIConnectionError:
             response = {
                 'error': 'Our payment gateway is experiencing connectivity issues, please try again.'
             }

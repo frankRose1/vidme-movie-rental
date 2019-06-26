@@ -124,7 +124,7 @@ class AdminView(V1FlaskView):
             upcoming = None
 
         dumped_user = user_detail_schema.dump(user)
-        dumped_invoices = invoices_schema.dump(invoices_schema)
+        dumped_invoices = invoices_schema.dump(invoices)
         response = {'data': {
             'user': dumped_user.data,
             'invoices': dumped_invoices.data,

@@ -19,7 +19,7 @@ def cli():
 
 @click.command()
 @click.option('--with-testdb/--no-with-testdb', default=False,
-                help='Create a test db too?')
+              help='Create a test db too?')
 def init(with_testdb):
     """
     Initialize the database.
@@ -60,7 +60,7 @@ def seed():
 
 @click.command()
 @click.option('--with-testdb/--no-with-testdb', default=False,
-                help='Create a test db too?')
+              help='Create a test db too?')
 @click.pass_context
 def reset(ctx, with_testdb):
     """
@@ -71,7 +71,7 @@ def reset(ctx, with_testdb):
     """
     ctx.invoke(init, with_testdb=with_testdb)
     ctx.invoke(seed)
-    
+
     return None
 
 

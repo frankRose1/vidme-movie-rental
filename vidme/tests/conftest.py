@@ -51,14 +51,15 @@ def db(app):
     :param app: Pytest fixture
     :return: SQLAlchemy database session
     """
+
     _db.drop_all()
     _db.create_all()
 
     # Create a single user, a lot of tests will not mutate this user
     params = {
         'role': 'admin',
-        'email': 'admin@local.host',
-        'username': 'mainAdmin1',
+        'email': 'testAdmin@local.host',
+        'username': 'testAdmin1',
         'password': 'password'
     }
 
@@ -68,6 +69,22 @@ def db(app):
     _db.session.commit()
 
     return _db
+
+
+@pytest.yield_fixture(scope='function')
+def session(db):
+    """
+    Allow very fast tests by using rollbacks and nested sessions. This does
+    require that your database supports SQL savepoints, and Postgres does.
+
+    :param db: Pytest fixture
+    :return: None
+    """
+    db.session.begin_nested()
+
+    yield db.session
+
+    db.session.rollback()
 
 
 @pytest.yield_fixture(scope='function')
