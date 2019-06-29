@@ -1,4 +1,5 @@
 import pytest
+from flask import url_for
 
 
 def assert_status_with_message(status_code=200, response=None, message=None):
@@ -30,4 +31,27 @@ class ViewTestMixin(object):
         self.session = session
         self.client = client
 
-    # TODO add an authenticate method in the future
+    def authenticate(self, identity='testAdmin@local.host', password='password'):
+        """Authenticate a specific user"""
+        return _login(self.client, identity, password)
+
+
+def _login(client, identity, password):
+    """
+    Log a specific user in by adding an auth token to the test client headers.
+
+    :param client: Flask client
+    :param identity: The user's identity(username or email)
+    :type identity: str
+    :param password: The password
+    :type password: str
+    :return: Flask test client
+    """
+    user = dict(identity=identity, password=password)
+
+    response = client.post(url_for('AuthView:post'), json=user)
+    data = response.get_json()['data']
+    token = data['access_token']
+
+    client.environ_base['HTTP_AUTHORIZATION'] = 'Bearer ' + token
+    return client

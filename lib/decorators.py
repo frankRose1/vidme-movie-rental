@@ -47,12 +47,12 @@ def subscription_required(fn):
     @wraps(fn)
     def decorated_function(*args, **kwargs):
         if not current_user.subscription:
+            msg = 'You need an active subscription to access this resource.'
             response = {
-                'error': 'You need an active subscription to access this \
-                          resource'
+                'error': msg
             }
             return jsonify(response), 403
-        fn(*args, **kwargs)
+        return fn(*args, **kwargs)
 
     return decorated_function
 

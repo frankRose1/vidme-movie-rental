@@ -11,13 +11,13 @@ from lib.util_datetime import timedelta_months
 from vidme.blueprints.user.models import User
 from vidme.blueprints.billing.models.credit_card import CreditCard
 from vidme.blueprints.billing.models.subscription import Subscription
-from vidme.blueprints.billing.gateways.stripecom import \
-    Event as PaymentEvent
-from vidme.blueprints.billing.gateways.stripecom import Card as PaymentCard
-from vidme.blueprints.billing.gateways.stripecom import \
-    Subscription as PaymentSubscription
-from vidme.blueprints.billing.gateways.stripecom import \
-    Invoice as PaymentInvoice
+from vidme.blueprints.billing.gateways.stripecom import (
+    Event as PaymentEvent,
+    Card as PaymentCard,
+    Subscription as PaymentSubscription,
+    Invoice as PaymentInvoice,
+    Product as PaymentProduct
+)
 
 
 @pytest.yield_fixture(scope='session')
@@ -32,6 +32,7 @@ def app():
     params = {
         'DEBUG': False,
         'TESTING': True,
+        'JWT_COOKIE_CSRF_PROTECT': False,
         'SQLALCHEMY_DATABASE_URI': db_uri
     }
 
@@ -151,13 +152,13 @@ def credit_cards(db):
         {
             'user_id': 1,
             'brand': 'Visa',
-            'last4': 4242
+            'last4': 4242,
             'exp_date': june_29_2019
         },
         {
             'user_id': 1,
             'brand': 'Visa',
-            'last4': 4242
+            'last4': 4242,
             'exp_date': timedelta_months(12, may_29_2019)
         },
     ]
@@ -172,7 +173,7 @@ def credit_cards(db):
 @pytest.fixture(scope='function')
 def subscriptions(db):
     """
-    Create credit card fixtures.
+    Create subscription fixutres.
 
     :param db: Pytest fixture
     :return: SQLAlchemy database session   
@@ -180,14 +181,14 @@ def subscriptions(db):
     subscriber = User.find_by_identity('subscriber@local.host')
     if subscriber:
         subscriber.delete()
-    db.session.Query.delete(Subscription).delete()
+    db.session.query(Subscription).delete()
 
     params = {
         'role': 'admin',
         'email': 'subscriber@local.host',
-        'username': 'firstSub1'
+        'username': 'firstSub1',
         'name': 'Subby',
-        'payment_id': 'cus_00',
+        'payment_id': 'cus_000',
         'password': 'password'
     }
 
@@ -226,8 +227,91 @@ def mock_stripe():
     """
     PaymentEvent.retrieve = Mock(return_value={})
     PaymentCard.update = Mock(return_value={})
-    PaymentSubscription.create = Mock(return_value={})
     PaymentSubscription.update = Mock(return_value={})
     PaymentSubscription.cancel = Mock(return_value={})
+    PaymentSubscription.create = Mock(return_value={})
 
-    upcoming_invoice_api = {}
+    product_api = {
+        "id": "prod_000",
+        "type": "service",
+        "name": "gold",
+        "statement_descriptor": "GOLD MONTHLY"
+    }
+    PaymentProduct.retrieve = Mock(return_value=product_api)
+
+    upcoming_invoice_api = {
+        'date': 1433018770,
+        'id': 'in_000',
+        'period_start': 1433018770,
+        'period_end': 1433018770,
+        'lines': {
+            'data': [
+                {
+                    'id': 'sub_000',
+                    'object': 'line_item',
+                    'type': 'subscription',
+                    'livemode': True,
+                    'amount': 0,
+                    'currency': 'usd',
+                    'proration': False,
+                    'period': {
+                        'start': 1433161742,
+                        'end': 1434371342
+                    },
+                    'subscription': None,
+                    'quantity': 1,
+                    'plan': {
+                        'interval': 'month',
+                        'name': 'Gold',
+                        'created': 1424879591,
+                        'amount': 999,
+                        'currency': 'usd',
+                        'id': 'gold',
+                        'object': 'plan',
+                        'livemode': False,
+                        'interval_count': 1,
+                        'trial_period_days': 14,
+                        'metadata': {
+                        },
+                        'nickname': 'Gold',
+                        'product': 'prod_000',
+                    },
+                    'description': None,
+                    'discountable': True,
+                    'metadata': {
+                    }
+                }
+            ],
+            'total_count': 1,
+            'object': 'list',
+            'url': '/v1/invoices/in_000/lines'
+        },
+        'subtotal': 0,
+        'total': 0,
+        'customer': 'cus_000',
+        'object': 'invoice',
+        'attempted': True,
+        'closed': True,
+        'forgiven': False,
+        'paid': True,
+        'livemode': False,
+        'attempt_count': 0,
+        'amount_due': 500,
+        'currency': 'usd',
+        'starting_balance': 0,
+        'ending_balance': 0,
+        'next_payment_attempt': None,
+        'webhooks_delivered_at': None,
+        'charge': None,
+        'discount': None,
+        'application_fee': None,
+        'subscription': 'sub_000',
+        'tax_percent': None,
+        'tax': None,
+        'metadata': {
+        },
+        'statement_descriptor': None,
+        'description': None,
+        'receipt_number': None
+    }
+    PaymentInvoice.upcoming = Mock(return_value=upcoming_invoice_api)

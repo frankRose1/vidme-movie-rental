@@ -38,7 +38,7 @@ class SubscriptionsView(V1FlaskView):
         # get the subscription plan, send a 404 if it doesnt exist
         subscription_plan = Subscription.get_plan(data['plan'])
         if subscription_plan is None:
-            response: {'error': 'Plan not found.'}
+            response = {'error': 'Plan not found.'}
             return jsonify(response), 404
 
         # if data is valid create a subscription
@@ -63,7 +63,8 @@ class SubscriptionsView(V1FlaskView):
             return jsonify(response), 404
 
         json_data = request.get_json()
-        data, errors = create_edit_subscription_schema.load(json_data)
+        data, errors = create_edit_subscription_schema.load(json_data,
+                                                            partial=('plan',))
 
         if errors:
             response = {'error': errors}
