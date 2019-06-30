@@ -22,11 +22,14 @@ class User(ResourceMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     # relationships
-    credit_card = db.relationship(CreditCard, uselist=False, backref='users',
+    credit_card = db.relationship(CreditCard, uselist=False,
+                                  backref='credit_card',
                                   passive_deletes=True)
     subscription = db.relationship(Subscription, uselist=False,
-                                   backref='users', passive_deletes=True)
-    invoices = db.relationship(Invoice, backref='users', passive_deletes=True)
+                                   backref='subscription',
+                                   passive_deletes=True)
+    invoices = db.relationship(Invoice, backref='invoices',
+                               passive_deletes=True)
 
     # Auth
     role = db.Column(db.Enum(*ROLE, name='role_types', native_enum=False),

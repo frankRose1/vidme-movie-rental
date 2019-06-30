@@ -1,8 +1,5 @@
 import datetime
 
-import pytz
-
-from vidme.blueprints.user.models import User
 from vidme.blueprints.billing.models.credit_card import CreditCard
 from vidme.blueprints.billing.models.invoice import Invoice
 
@@ -139,10 +136,9 @@ class TestInvoice(object):
         """Parse the correct data from a Stripe invoice payload"""
         parsed_payload = Invoice.upcoming('cus_000')
         next_bill_on = datetime.datetime(2015, 5, 30, 20, 46, 10)
-    
+
         assert parsed_payload['plan'] == 'Gold'
         assert parsed_payload['description'] == 'GOLD MONTHLY'
         assert parsed_payload['next_bill_on'] == next_bill_on
         assert parsed_payload['amount_due'] == 500
         assert parsed_payload['interval'] == 'month'
-

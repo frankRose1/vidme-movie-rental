@@ -30,6 +30,11 @@ class SubscriptionsView(V1FlaskView):
 
         # validate the incoming data
         json_data = request.get_json()
+
+        if not json_data:
+            response = {'error': 'Invalid input.'}
+            return jsonify(response), 400
+
         data, errors = create_edit_subscription_schema.load(json_data)
 
         if errors:
@@ -63,6 +68,11 @@ class SubscriptionsView(V1FlaskView):
             return jsonify(response), 404
 
         json_data = request.get_json()
+
+        if not json_data:
+            response = {'error': 'Invalid input.'}
+            return jsonify(response), 400
+
         data, errors = create_edit_subscription_schema.load(json_data,
                                                             partial=('plan',))
 
@@ -133,7 +143,12 @@ class PlansView(V1FlaskView):
         # get the new plan from the client, token and customer name are not
         # needed since that information is already set up
         json_data = request.get_json()
-        partials = ('stripe_token', 'customer_name')
+
+        if not json_data:
+            response = {'error': 'Invalid input.'}
+            return jsonify(response), 400
+
+        partials = ('stripe_token', 'customer_name',)
         data, errors = create_edit_subscription_schema.load(json_data,
                                                             partial=partials)
         if errors:

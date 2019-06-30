@@ -11,6 +11,7 @@ from lib.util_datetime import timedelta_months
 from vidme.blueprints.user.models import User
 from vidme.blueprints.billing.models.credit_card import CreditCard
 from vidme.blueprints.billing.models.subscription import Subscription
+from vidme.blueprints.billing.models.invoice import Invoice
 from vidme.blueprints.billing.gateways.stripecom import (
     Event as PaymentEvent,
     Card as PaymentCard,
@@ -176,7 +177,7 @@ def subscriptions(db):
     Create subscription fixutres.
 
     :param db: Pytest fixture
-    :return: SQLAlchemy database session   
+    :return: SQLAlchemy database session
     """
     subscriber = User.find_by_identity('subscriber@local.host')
     if subscriber:
@@ -217,6 +218,61 @@ def subscriptions(db):
 
     db.session.commit()
 
+    return db
+
+
+@pytest.fixture(scope='session')
+def invoices(db):
+    """
+    Create invoice fixtures.
+
+    :param db: Pytest fixture
+    :return: SQLAlchemy database session
+    """
+    db.session.query(Invoice).delete()
+
+    trial_start = datetime.date(2019, 5, 1)
+    trial_end = datetime.date(2019, 5, 15)
+
+    june_29_2021 = datetime.datetime(2021, 6, 29, 0, 0, 0)
+    june_29_2021 = pytz.utc.localize(june_29_2021)
+    invoices = [
+        {
+            'plan': 'gold',
+            'receipt_number': '0009000',
+            'description': 'VIDME GOLD',
+            'period_start_on': trial_start,
+            'period_end_on': trial_end,
+            'currency': 'usd',
+            'tax': None,
+            'tax_percent': None,
+            'total': None,
+            'user_id': 1,
+            'brand': 'Visa',
+            'last4': 4242,
+            'exp_date': june_29_2021
+        },
+        {
+            'plan': 'gold',
+            'receipt_number': '0010000',
+            'description': 'VIDME GOLD',
+            'period_start_on': trial_end,
+            'period_end_on': datetime.date(2019, 6, 15),
+            'currency': 'usd',
+            'tax': 0.19,
+            'tax_percent': 0.02,
+            'total': 999,
+            'user_id': 1,
+            'brand': 'Visa',
+            'last4': 4242,
+            'exp_date': june_29_2021
+        },
+    ]
+
+    for invoice in invoices:
+        db.session.add(Invoice(**invoice))
+
+    db.session.commit()
     return db
 
 

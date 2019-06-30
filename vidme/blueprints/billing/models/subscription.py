@@ -76,7 +76,7 @@ class Subscription(ResourceMixin, db.Model):
         db.session.delete(user.subscription)
 
         if discard_credit_card:
-            db.session.delete(user.subscription)
+            db.session.delete(user.credit_card)
 
         db.session.commit()
 

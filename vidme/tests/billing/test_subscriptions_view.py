@@ -66,21 +66,29 @@ class TestCreateSubscription(ViewTestMixin):
         assert_status_with_message(404, response, 'Plan not found.')
 
 
-# class TestUpdateSubscription(ViewTestMixin):
-#     def test_credit_card_not_found(self):
-#         """
-#         If a user is currently subbed, a CC would be in the DB. If no CC is
-#         related to the authenticated user, return a 404
-#         """
-#         self.authenticate()
-#         data = {
-#             'stripe_token': 'tok_visa',
-#             'customer_name': 'Jane Smith',
-#         }
-#         response = self.client.put(
-#             url_for('SubscriptionsView:put'), json=data)
-#         assert_status_with_message(
-#             404, response, 'You do not have a payment method on file.')
+class TestUpdateSubscription(ViewTestMixin):
+    def test_credit_card_not_found(self):
+        """
+        If a user is currently subbed, a CC would be in the DB. If no CC is
+        related to the authenticated user, return a 404
+        """
+        self.authenticate()
+        data = {
+            'stripe_token': 'tok_visa',
+            'customer_name': 'Jane Smith',
+        }
+        response = self.client.put(
+            url_for('SubscriptionsView:put'), json=data)
+        assert_status_with_message(
+            404, response, 'You do not have a payment method on file.')
+
+    def test_missing_required_fields(self):
+        """Missing stripe_token and customer name"""
+        self.authenticate(identity='subscriber@local.host')
+        data = {'stripe_token': '', 'customer_name': ''}
+        response = self.client.put(
+            url_for('SubscriptionsView:put'), json=data)
+        assert response.status_code == 422
 
 
 class TestGetSubscription(ViewTestMixin):
@@ -94,6 +102,7 @@ class TestGetSubscription(ViewTestMixin):
     def test_billing_info(self, subscriptions):
         self.authenticate(identity='subscriber@local.host')
         response = self.client.get(url_for('SubscriptionsView:index'))
+        print(response.get_json())
         assert response.status_code == 200
 
 
@@ -105,8 +114,8 @@ class TestCancelSubscription(ViewTestMixin):
         """
         self.authenticate()
         response = self.client.delete(url_for('SubscriptionsView:delete'))
-        assert_status_with_message(403, response,
-                                   'You need an active subscription to access this resource.')
+        msg = 'You need an active subscription to access this resource.'
+        assert_status_with_message(403, response, msg)
 
     def test_cancel_subscription(self, subscriptions, mock_stripe):
         """Successfully cancels a user's subscription"""
