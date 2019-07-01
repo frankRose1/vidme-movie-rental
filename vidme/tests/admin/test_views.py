@@ -122,4 +122,28 @@ class TestEditUser(ViewTestMixin):
                                       username='testAdmin1'), json=data)
         error = 'User is the last admin in the system.'
         assert response.status_code == 400
-        assert response.get_json()['error']['username'][0] == error
+        assert response.get_json()['error'] == error
+
+    def test_username_is_unique(self, subscriptions):
+        """If username is being changed, make sure its not already taken"""
+        self.authenticate()
+        data = {
+            'role': 'admin',
+            'username': 'firstSub1' # this username exists from subscriptions
+        }
+        response = self.client.put(url_for('AdminView:edit_user',
+                                      username='testAdmin1'), json=data)
+        assert response.status_code == 400
+        assert response.get_json()['error'] == 'Username is already taken.'
+
+    def test_edit_user(self, subscriptions):
+        """Successfully update a user account"""
+        self.authenticate()
+        data = {
+            'role': 'admin',
+            'username': 'firstSub1'
+        }
+        response = self.client.put(url_for('AdminView:edit_user',
+                                      username='firstSub1'), json=data)
+        location = response.headers['Location']
+        assert response.status_code == 400

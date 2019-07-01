@@ -104,22 +104,16 @@ class AdminView(V1FlaskView):
         }}
         return response
 
-    @route('/users/<user_id>', methods=['GET'])
+    @route('/users/<username>', methods=['GET'])
     @handle_stripe_exceptions
     @admin_required
-    def get_user(self, user_id):
+    def get_user(self, username):
         """Allows an admin to fetch specific user data
         """
-        response = {'error': USER_NOT_FOUND}
-
-        try:
-            user_id = int(user_id)
-        except ValueError:
-            return response, 404
-
-        user = User.query.filter(User.id == user_id).first()
+        user = User.find_by_identity(username)
 
         if user is None:
+            response = {'error': USER_NOT_FOUND}
             return response, 404
 
         invoices = Invoice.billing_history(user=user)

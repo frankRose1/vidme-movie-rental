@@ -17,7 +17,12 @@ def output_json(data, code=200, headers=None):
     :return: Result from flask.make_response()
     """
     content_type = 'application/json'
-    dumped = json.dumps(data)
+    # for a 204 status code
+    if data == '':
+        dumped = data
+    else:
+        dumped = json.dumps(data)
+
     if headers:
         headers.update({'Content-Type': content_type})
     else:
