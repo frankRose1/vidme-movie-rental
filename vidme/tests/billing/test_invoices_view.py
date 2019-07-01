@@ -18,5 +18,3 @@ class TestInvoicesView(ViewTestMixin):
         assert response.status_code == 200
         assert data['upcoming_invoice'] is None
         assert len(invoice_history) == 2
-
-

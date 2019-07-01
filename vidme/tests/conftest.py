@@ -185,7 +185,7 @@ def subscriptions(db):
     db.session.query(Subscription).delete()
 
     params = {
-        'role': 'admin',
+        'role': 'member',
         'email': 'subscriber@local.host',
         'username': 'firstSub1',
         'name': 'Subby',
@@ -221,7 +221,7 @@ def subscriptions(db):
     return db
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def invoices(db):
     """
     Create invoice fixtures.

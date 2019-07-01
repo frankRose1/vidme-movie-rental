@@ -22,7 +22,10 @@ USER_NOT_FOUND = 'User not found.'
 
 class AdminView(V1FlaskView):
 
-    representations = {'application/json': output_json}
+    representations = {
+        'application/json': output_json,
+        'flask-classful/default': output_json,
+    }
 
     @admin_required
     def index(self):
@@ -39,22 +42,25 @@ class AdminView(V1FlaskView):
         }}
         return response
 
-    @route('/cancel_subscription/<user_id>', methods=['DELETE'])
+    @route('/cancel_subscription/<username>', methods=['DELETE'])
     @handle_stripe_exceptions
     @admin_required
-    def cancel_subscription(self, user_id):
+    def cancel_subscription(self, username):
         """Admins can canel a user's subscription"""
-        response = {'error': USER_NOT_FOUND}
 
-        try:
-            user_id = int(user_id)
-        except ValueError:
-            return response, 404
-
-        user = User.query.filter(User.id == user_id).first()
+        user = User.find_by_identity(username)
 
         if user is None:
+            response = {'error': USER_NOT_FOUND}
             return response, 404
+
+        if not user.subscription:
+            error = '{0} doesn\'t have an active subscription.'.format(
+                     username)
+            response = {
+                'error': error
+            }
+            return response, 400
 
         subscription = Subscription()
         subscription.cancel(user=user)
@@ -132,24 +138,18 @@ class AdminView(V1FlaskView):
         }}
         return response
 
-    @route('/users/edit/<user_id>', methods=['PATCH'])
+    @route('/users/edit/<username>', methods=['PUT'])
     @admin_required
-    def edit_user(self, user_id):
+    def edit_user(self, username):
         """
         Admins can edit user accounts, for example if the username is
         offensive/goes against guidelines or update their permissions
         """
-        response = {'error': USER_NOT_FOUND}
-
-        try:
-            user_id = int(user_id)
-        except ValueError:
-            return response, 404
-
         # find the User
-        user = User.query.filter(User.id == user_id).first()
+        user = User.find_by_identity(username)
 
         if user is None:
+            response = {'error': USER_NOT_FOUND}
             return response, 404
 
         # load the json data
@@ -160,7 +160,7 @@ class AdminView(V1FlaskView):
             response = {'error': 'Invalid input.'}
             return response, 400
 
-        data, errors = admin_edit_user_schema(json_data)
+        data, errors = admin_edit_user_schema.load(json_data)
 
         if errors:
             response = {'error': errors}
@@ -185,27 +185,7 @@ class AdminView(V1FlaskView):
         user.role = data['role']
         user.save()
 
-        headers = {'Location': url_for('AdminView:get_user', user_id=user.id)}
+        headers = {'Location': url_for('AdminView:get_user',
+                                        username=user.username)}
         return '', 204, headers
 
-    @route('/users/delete/<user_id>', methods=['DELETE'])
-    @admin_required
-    def delete_user(self, user_id):
-        """Admins can delete user accounts
-        """
-        response = {'error': USER_NOT_FOUND}
-
-        try:
-            user_id = int(user_id)
-        except ValueError:
-            return response, 404
-
-        user = User.query.filter(User.id == user_id).first()
-
-        if user is None:
-            return response, 404
-
-        user.delete()
-
-        headers = {'Location': url_for('AdminView:users')}
-        return '', 204, headers

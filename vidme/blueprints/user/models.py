@@ -103,11 +103,13 @@ class User(ResourceMixin, db.Model):
 
         if is_changing_roles:
             admin_count = User.query.filter(User.role == 'admin').count()
-
+            print('ADMIN COUNT')
+            print(admin_count)
             if admin_count == 1:
                 return True
 
         return False
+
 
     @classmethod
     def search(cls, query):
