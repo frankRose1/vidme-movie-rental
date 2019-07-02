@@ -21,7 +21,7 @@ def output_json(data, code=200, headers=None):
     if data == '':
         dumped = data
     else:
-        dumped = json.dumps(data)
+        dumped = json.dumps(data, default=str)
 
     if headers:
         headers.update({'Content-Type': content_type})

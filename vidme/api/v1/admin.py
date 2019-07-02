@@ -130,6 +130,8 @@ class AdminView(V1FlaskView):
             'invoices': dumped_invoices.data,
             'upcoming_invoice': upcoming
         }}
+        print('printing response!!!')
+        print(response)
         return response
 
     @route('/users/edit/<username>', methods=['PUT'])

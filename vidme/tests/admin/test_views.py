@@ -137,7 +137,7 @@ class TestEditUser(ViewTestMixin):
         assert response.get_json()['error'] == 'Username is already taken.'
 
     def test_edit_user(self, subscriptions):
-        """Successfully update a user account"""
+        """Successfully update a user account and set location headers"""
         self.authenticate()
         data = {
             'role': 'admin',
@@ -146,4 +146,78 @@ class TestEditUser(ViewTestMixin):
         response = self.client.put(url_for('AdminView:edit_user',
                                       username='firstSub1'), json=data)
         location = response.headers['Location']
-        assert response.status_code == 400
+        assert response.status_code == 204
+        assert location == url_for('AdminView:get_user', username='firstSub1')
+
+        user = User.find_by_identity('firstSub1')
+        assert user.role == 'admin'
+
+
+class TestGetUser(ViewTestMixin):
+    def test_user_not_found(self):
+        """Return a 404 for a user that doesn't exist"""
+        self.authenticate()
+        response = self.client.get(url_for('AdminView:get_user',
+                                           username='iDontExist'))
+        assert response.status_code == 404
+        assert response.get_json()['error'] == 'User not found.'
+    
+    def test_get_user_with_subscription(self, subscriptions):
+        """
+        Return the user's data and the upcoming invoice data if the user is
+        currently subscribed
+        """
+        self.authenticate()
+        response = self.client.get(url_for('AdminView:get_user',
+                                           username='firstSub1'))
+        data = response.get_json()['data']
+        user = data['user']
+        upcoming_invoice = data['upcoming_invoice']
+        assert response.status_code == 200
+        assert 'password' not in user
+        assert user['username'] == 'testAdmin1'
+        assert 'sign_in_count' in user
+        assert 'created_on' in user
+        assert 'updated_on' in user
+        assert 'credit_card' in user
+        assert 'subscription' in user
+        assert 'name' in user
+        assert 'email' in user
+        assert 'last_sign_in_ip' in user
+        assert 'current_sign_in_ip' in user
+        assert 'last_sign_in_on' in user
+        assert 'current_sign_in_on' in user
+
+        assert upcoming_invoice['interval'] == 'month'
+        assert upcoming_invoice['amount_due'] == 500
+        assert upcoming_invoice['description'] == 'VIDME GOLD'
+        assert upcoming_invoice['plan'] == 'Gold'
+
+    def test_get_user_no_subscription(self, invoices):
+        """
+        Return the user's data including invoices(billing) data, even if
+        the user is not currently subscribed
+        """
+        self.authenticate()
+        response = self.client.get(url_for('AdminView:get_user',
+                                           username='testAdmin1'))
+        data = response.get_json()['data']
+        user = data['user']
+        invoices = data['invoices']
+
+        assert response.status_code == 200
+        assert data['upcoming_invoice'] is None
+        assert len(invoices) == 2
+        assert user['sign_in_count'] >= 1
+        assert 'password' not in 'user'
+        assert user['username'] == 'testAdmin1'
+        assert 'created_on' in user
+        assert 'updated_on' in user
+        assert 'credit_card' in user
+        assert 'subscription' in user
+        assert 'name' in user
+        assert 'email' in user
+        assert 'last_sign_in_ip' in user
+        assert 'current_sign_in_ip' in user
+        assert 'last_sign_in_on' in user
+        assert 'current_sign_in_on' in user

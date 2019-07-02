@@ -106,19 +106,19 @@ class TestGetSubscription(ViewTestMixin):
         assert response.status_code == 200
 
 
-class TestCancelSubscription(ViewTestMixin):
-    def test_cancel_subscription_no_active_subscription(self):
-        """
-        A user with no active subscription should not be able to access the
-        delete resource
-        """
-        self.authenticate()
-        response = self.client.delete(url_for('SubscriptionsView:delete'))
-        msg = 'You need an active subscription to access this resource.'
-        assert_status_with_message(403, response, msg)
+# class TestCancelSubscription(ViewTestMixin):
+#     def test_cancel_subscription_no_active_subscription(self):
+#         """
+#         A user with no active subscription should not be able to access the
+#         delete resource
+#         """
+#         self.authenticate()
+#         response = self.client.delete(url_for('SubscriptionsView:delete'))
+#         msg = 'You need an active subscription to access this resource.'
+#         assert_status_with_message(403, response, msg)
 
-    def test_cancel_subscription(self, subscriptions, mock_stripe):
-        """Successfully cancels a user's subscription"""
-        self.authenticate(identity='subscriber@local.host')
-        response = self.client.delete(url_for('SubscriptionsView:delete'))
-        assert response.status_code == 204
+#     def test_cancel_subscription(self, subscriptions, mock_stripe):
+#         """Successfully cancels a user's subscription"""
+#         self.authenticate(identity='subscriber@local.host')
+#         response = self.client.delete(url_for('SubscriptionsView:delete'))
+#         assert response.status_code == 204

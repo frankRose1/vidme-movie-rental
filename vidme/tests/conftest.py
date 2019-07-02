@@ -259,7 +259,7 @@ def invoices(db):
             'period_start_on': trial_end,
             'period_end_on': datetime.date(2019, 6, 15),
             'currency': 'usd',
-            'tax': 0.19,
+            'tax': 1.4,
             'tax_percent': 0.02,
             'total': 999,
             'user_id': 1,
