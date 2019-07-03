@@ -35,10 +35,10 @@ def admin_required(fn):
     return wrapper
 
 
-def subscription_required(fn):
+def jwt_and_subscription_required(fn):
     """
-    Ensures a user has an active subscription before accessing certain
-    endpoints
+    Ensures a user is authenticated and has an active subscription before
+    accessing certain endpoints.
 
     :param fn: Function being decorated
     :type fn: Function
@@ -46,6 +46,7 @@ def subscription_required(fn):
     """
     @wraps(fn)
     def decorated_function(*args, **kwargs):
+        verify_jwt_in_request()
         if not current_user.subscription:
             msg = 'You need an active subscription to access this resource.'
             response = {

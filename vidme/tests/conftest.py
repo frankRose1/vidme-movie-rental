@@ -111,7 +111,7 @@ def users(db):
     :param db: Pytest fixture
     :return: SQLAlchemy database session
     """
-    db.session.query(User).delete()
+    # db.session.query(User).delete()
 
     users = [
         {
@@ -122,12 +122,17 @@ def users(db):
         },
         {
             'email': 'member@local.host',
-            'username': 'originalMember',
+            'username': 'userMember',
             'password': 'password'
         }
     ]
 
+    
+
     for user in users:
+        exists = User.find_by_identity(user['username'])
+        if exists:
+            exists.delete()
         db.session.add(User(**user))
 
     db.session.commit()

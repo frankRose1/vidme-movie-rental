@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 import pytz
 from werkzeug.security import generate_password_hash, check_password_hash
-from sqlalchemy import or_
+from sqlalchemy import or_, text
 
 from lib.util_sqlalchemy import ResourceMixin, AwareDateTime
 from vidme.blueprints.billing.models.credit_card import CreditCard
@@ -122,7 +122,7 @@ class User(ResourceMixin, db.Model):
         :return: SQLAlchemy filter
         """
         if not query:
-            return ''
+            return text('')
 
         search_query = '%{0}%'.format(query)  # %% partial words
         search_chain = (User.email.ilike(search_query),

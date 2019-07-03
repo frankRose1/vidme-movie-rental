@@ -82,7 +82,7 @@ class TestUpdateSubscription(ViewTestMixin):
         assert_status_with_message(
             404, response, 'You do not have a payment method on file.')
 
-    def test_missing_required_fields(self):
+    def test_missing_required_fields(self, subscriptions):
         """Missing stripe_token and customer name"""
         self.authenticate(identity='subscriber@local.host')
         data = {'stripe_token': '', 'customer_name': ''}
@@ -102,23 +102,37 @@ class TestGetSubscription(ViewTestMixin):
     def test_billing_info(self, subscriptions):
         self.authenticate(identity='subscriber@local.host')
         response = self.client.get(url_for('SubscriptionsView:index'))
-        print(response.get_json())
+        data = response.get_json()['data']
+        plan = data['active_plan']
+        card = data['credit_card']
+
         assert response.status_code == 200
+        assert plan['amount'] == 999
+        assert plan['currency'] == 'usd'
+        assert plan['id'] == 'gold'
+        assert plan['statement_descriptor'] == 'VIDME GOLD'
+        assert plan['interval'] == 'month'
+        assert card['last4'] == 4242
+        assert card['brand'] == 'Visa'
+        assert 'is_expiring' in card
+        assert 'exp_date' in card
+        assert 'updated_on' in card
+        assert 'created_on' in card
 
 
-# class TestCancelSubscription(ViewTestMixin):
-#     def test_cancel_subscription_no_active_subscription(self):
-#         """
-#         A user with no active subscription should not be able to access the
-#         delete resource
-#         """
-#         self.authenticate()
-#         response = self.client.delete(url_for('SubscriptionsView:delete'))
-#         msg = 'You need an active subscription to access this resource.'
-#         assert_status_with_message(403, response, msg)
+class TestCancelSubscription(ViewTestMixin):
+    def test_no_active_subscription(self):
+        """
+        A user with no active subscription should not be able to access the
+        delete resource
+        """
+        self.authenticate()
+        response = self.client.delete(url_for('SubscriptionsView:delete'))
+        msg = 'You need an active subscription to access this resource.'
+        assert_status_with_message(403, response, msg)
 
-#     def test_cancel_subscription(self, subscriptions, mock_stripe):
-#         """Successfully cancels a user's subscription"""
-#         self.authenticate(identity='subscriber@local.host')
-#         response = self.client.delete(url_for('SubscriptionsView:delete'))
-#         assert response.status_code == 204
+    def test_cancel_subscription(self, subscriptions, mock_stripe):
+        """Successfully cancels a user's subscription"""
+        self.authenticate(identity='subscriber@local.host')
+        response = self.client.delete(url_for('SubscriptionsView:delete'))
+        assert response.status_code == 204

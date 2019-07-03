@@ -23,7 +23,7 @@ class CreditCardSchema(marshmallow.Schema):
     """
     class Meta:
         fields = ('id', 'created_on', 'updated_on', 'exp_date', 'is_expiring',
-                  'last4', 'brand', 'user_id')
+                  'last4', 'brand')
 
 
 class SubscriptionSchema(marshmallow.Schema):

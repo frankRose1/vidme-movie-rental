@@ -43,8 +43,8 @@ class AdminView(V1FlaskView):
         return response
 
     @route('/cancel_subscription/<username>', methods=['DELETE'])
-    @handle_stripe_exceptions
     @admin_required
+    @handle_stripe_exceptions
     def cancel_subscription(self, username):
         """Admins can canel a user's subscription"""
 
@@ -91,7 +91,7 @@ class AdminView(V1FlaskView):
         # thats what request.args.get('q') is
         paginated_users = User.query \
             .filter(User.search(request.args.get('q', ''))) \
-            .order_by(User.role.asc(), text(order_values)) \
+            .order_by(User.role.asc(), User.payment_id, text(order_values)) \
             .paginate(page, page_size, True)
 
         dumped_users = users_schema.dump(paginated_users.items)
@@ -105,8 +105,8 @@ class AdminView(V1FlaskView):
         return response
 
     @route('/users/<username>', methods=['GET'])
-    @handle_stripe_exceptions
     @admin_required
+    @handle_stripe_exceptions
     def get_user(self, username):
         """Allows an admin to fetch specific user data
         """
@@ -130,8 +130,6 @@ class AdminView(V1FlaskView):
             'invoices': dumped_invoices.data,
             'upcoming_invoice': upcoming
         }}
-        print('printing response!!!')
-        print(response)
         return response
 
     @route('/users/edit/<username>', methods=['PUT'])

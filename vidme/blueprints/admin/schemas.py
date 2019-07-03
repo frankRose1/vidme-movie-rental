@@ -34,8 +34,8 @@ class UserSchema(marshmallow.Schema):
     # Nested schema for billing info/ subscription? TO show if a user has an
     #  account and to sort the results on the client
     class Meta:
-        fields = ('id', 'email', 'name', 'role', 'sign_in_count',
-                  'last_sign_in_on', 'created_on')
+        fields = ('username', 'email', 'role', 'sign_in_count',
+                  'last_sign_in_on', 'created_on','payment_id')
 
 
 class UserDetailSchema(marshmallow.Schema):
@@ -43,10 +43,11 @@ class UserDetailSchema(marshmallow.Schema):
     For dumping more detailed user info, inlcuding CC and billing information
     """
     class Meta:
-        fields = ('id', 'email', 'username', 'name', 'role', 'sign_in_count',
+        fields = ('email', 'username', 'name', 'role', 'sign_in_count',
                   'current_sign_in_on', 'current_sign_in_ip', 'updated_on',
                   'last_sign_in_on', 'last_sign_in_ip', 'created_on',
-                  'credit_card', 'subscription',)
+                  'credit_card', 'subscription', 'name',
+                  'cancelled_subscription_on')
     # Use nested Schemas
     credit_card = fields.Nested(CreditCardSchema)
     subscription = fields.Nested(SubscriptionSchema)

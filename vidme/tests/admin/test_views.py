@@ -175,7 +175,7 @@ class TestGetUser(ViewTestMixin):
         upcoming_invoice = data['upcoming_invoice']
         assert response.status_code == 200
         assert 'password' not in user
-        assert user['username'] == 'testAdmin1'
+        assert user['username'] == 'firstSub1'
         assert 'sign_in_count' in user
         assert 'created_on' in user
         assert 'updated_on' in user
@@ -190,7 +190,7 @@ class TestGetUser(ViewTestMixin):
 
         assert upcoming_invoice['interval'] == 'month'
         assert upcoming_invoice['amount_due'] == 500
-        assert upcoming_invoice['description'] == 'VIDME GOLD'
+        assert upcoming_invoice['description'] == 'GOLD MONTHLY'
         assert upcoming_invoice['plan'] == 'Gold'
 
     def test_get_user_no_subscription(self, invoices):
@@ -221,3 +221,40 @@ class TestGetUser(ViewTestMixin):
         assert 'current_sign_in_ip' in user
         assert 'last_sign_in_on' in user
         assert 'current_sign_in_on' in user
+
+
+class TestGetUsers(ViewTestMixin):
+    def test_get_users(self):
+        """Return a list of users in the DB"""
+        self.authenticate()
+        response = self.client.get(url_for('AdminView:users'))
+        data = response.get_json()['data']
+        users = data['users']
+
+        assert response.status_code == 200
+        assert data['has_next'] is False
+        assert data['has_prev'] is False
+        assert data['next_num'] is None
+        assert data['prev_num'] is None
+        assert 'password' not in users[0]
+        assert 'username' in users[0]
+        assert 'email' in users[0]
+        assert 'role' in users[0]
+        assert 'sign_in_count' in users[0]
+        assert 'last_sign_in_on' in users[0]
+        assert 'payment_id' in users[0]
+
+    def test_search_option(self):
+        """AdminView:users supports a search feature"""
+        self.authenticate()
+        args = {'q': 'noResultsUsername'}
+        response = self.client.get(url_for('AdminView:users'),
+                                   query_string=args)
+        data = response.get_json()['data']
+
+        assert response.status_code == 200
+        assert len(data['users']) == 0
+        assert data['has_next'] is False
+        assert data['has_prev'] is False
+        assert data['next_num'] is None
+        assert data['prev_num'] is None

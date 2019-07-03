@@ -14,13 +14,16 @@ from vidme.blueprints.billing.schemas import (
     subscription_schema,
     invoices_schema
 )
-from lib.decorators import handle_stripe_exceptions, subscription_required
+from lib.decorators import (
+    handle_stripe_exceptions,
+    jwt_and_subscription_required
+)
 
 
 class SubscriptionsView(V1FlaskView):
 
-    @handle_stripe_exceptions
     @jwt_required
+    @handle_stripe_exceptions
     def post(self):
         if current_user.subscription:
             response = {
@@ -55,8 +58,8 @@ class SubscriptionsView(V1FlaskView):
 
         return jsonify({}), 201
 
-    @handle_stripe_exceptions
     @jwt_required
+    @handle_stripe_exceptions
     def put(self):
         """Users should be able to update billing info without interuption"""
         # if a user had subscribed to a plan they would have
@@ -89,7 +92,7 @@ class SubscriptionsView(V1FlaskView):
                                            credit_card=card,
                                            name=data['customer_name'],
                                            token=data['stripe_token'])
-        return jsonify({}), 200
+        return jsonify({}), 204
 
     @jwt_required
     def index(self):
@@ -111,9 +114,8 @@ class SubscriptionsView(V1FlaskView):
         }}
         return jsonify(response), 200
 
+    @jwt_and_subscription_required
     @handle_stripe_exceptions
-    @subscription_required
-    @jwt_required
     def delete(self):
         """Cancel a user's subscription."""
         subscription = Subscription()
@@ -133,9 +135,8 @@ class PlansView(V1FlaskView):
         }}
         return jsonify(response), 200
 
+    @jwt_and_subscription_required
     @handle_stripe_exceptions
-    @subscription_required
-    @jwt_required
     def put(self):
         """
         Update a plan
@@ -173,8 +174,8 @@ class PlansView(V1FlaskView):
 
 
 class InvoicesView(V1FlaskView):
-    @handle_stripe_exceptions
     @jwt_required
+    @handle_stripe_exceptions
     def index(self):
         """
         Return the user's previous invoices, and the upcoming invoice
