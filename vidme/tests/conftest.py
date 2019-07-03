@@ -127,8 +127,6 @@ def users(db):
         }
     ]
 
-    
-
     for user in users:
         exists = User.find_by_identity(user['username'])
         if exists:

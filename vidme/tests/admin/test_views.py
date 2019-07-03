@@ -3,15 +3,15 @@ import datetime
 import pytz
 from flask import url_for
 
-from lib.tests import ViewTestMixin, assert_status_with_message
+from lib.tests import ViewTestMixin
 from vidme.blueprints.user.models import User
 
 
 class TestDashboardView(ViewTestMixin):
     def test_get_dashboard(self, subscriptions):
         """
-        Should return grouped data regarding number of users and subscriptions in the
-        system
+        Should return grouped data regarding number of users and subscriptions
+        in the system
         """
         self.authenticate()
         response = self.client.get(url_for('AdminView:index'))
@@ -48,7 +48,7 @@ class TestCancelSubscription(ViewTestMixin):
                                       username='testAdmin1'))
         error = 'testAdmin1 doesn\'t have an active subscription.'
         assert response.status_code == 400
-        assert response.get_json()['error'] == error    
+        assert response.get_json()['error'] == error
 
     def test_cancel_subscription(self, subscriptions, mock_stripe):
         """Successfully cancel a user's subscription"""
@@ -63,7 +63,8 @@ class TestCancelSubscription(ViewTestMixin):
 
         user = User.find_by_identity('firstSub1')
         assert user.subscription is None
-        assert user.cancelled_subscription_on <= datetime.datetime.now(pytz.utc)
+        assert user.cancelled_subscription_on <= \
+            datetime.datetime.now(pytz.utc)
 
 
 class TestEditUser(ViewTestMixin):
@@ -71,7 +72,7 @@ class TestEditUser(ViewTestMixin):
         """Return a 404 if a user doesn't exist"""
         self.authenticate()
         response = self.client.put(url_for('AdminView:edit_user',
-                                      username='iDontExist1'))
+                                   username='iDontExist1'))
         assert response.status_code == 404
         assert response.get_json()['error'] == 'User not found.'
 
@@ -79,7 +80,7 @@ class TestEditUser(ViewTestMixin):
         """Return a 400 if no json data is sent in the request"""
         self.authenticate()
         response = self.client.put(url_for('AdminView:edit_user',
-                                      username='testAdmin1'))
+                                   username='testAdmin1'))
         assert response.status_code == 400
         assert response.get_json()['error'] == 'Invalid input.'
 
@@ -91,7 +92,7 @@ class TestEditUser(ViewTestMixin):
             'username': 'testAdmin1'
         }
         response = self.client.put(url_for('AdminView:edit_user',
-                                      username='testAdmin1'), json=data)
+                                   username='testAdmin1'), json=data)
         error = 'superAdmin is not a valid role.'
         assert response.status_code == 422
         assert response.get_json()['error']['role'][0] == error
@@ -104,7 +105,7 @@ class TestEditUser(ViewTestMixin):
             'username': 'Spaces not allowed *&'
         }
         response = self.client.put(url_for('AdminView:edit_user',
-                                      username='testAdmin1'), json=data)
+                                   username='testAdmin1'), json=data)
         error = 'Username must be letters, numbers and underscores only.'
         assert response.status_code == 422
         assert response.get_json()['error']['username'][0] == error
@@ -119,7 +120,7 @@ class TestEditUser(ViewTestMixin):
             'username': 'testAdmin1'
         }
         response = self.client.put(url_for('AdminView:edit_user',
-                                      username='testAdmin1'), json=data)
+                                   username='testAdmin1'), json=data)
         error = 'User is the last admin in the system.'
         assert response.status_code == 400
         assert response.get_json()['error'] == error
@@ -129,10 +130,10 @@ class TestEditUser(ViewTestMixin):
         self.authenticate()
         data = {
             'role': 'admin',
-            'username': 'firstSub1' # this username exists from subscriptions
+            'username': 'firstSub1'  # this username exists from subscriptions
         }
         response = self.client.put(url_for('AdminView:edit_user',
-                                      username='testAdmin1'), json=data)
+                                   username='testAdmin1'), json=data)
         assert response.status_code == 400
         assert response.get_json()['error'] == 'Username is already taken.'
 
@@ -144,7 +145,7 @@ class TestEditUser(ViewTestMixin):
             'username': 'firstSub1'
         }
         response = self.client.put(url_for('AdminView:edit_user',
-                                      username='firstSub1'), json=data)
+                                   username='firstSub1'), json=data)
         location = response.headers['Location']
         assert response.status_code == 204
         assert location == url_for('AdminView:get_user', username='firstSub1')
@@ -161,7 +162,7 @@ class TestGetUser(ViewTestMixin):
                                            username='iDontExist'))
         assert response.status_code == 404
         assert response.get_json()['error'] == 'User not found.'
-    
+
     def test_get_user_with_subscription(self, subscriptions):
         """
         Return the user's data and the upcoming invoice data if the user is

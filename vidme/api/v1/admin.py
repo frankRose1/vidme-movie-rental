@@ -180,6 +180,5 @@ class AdminView(V1FlaskView):
         user.save()
 
         headers = {'Location': url_for('AdminView:get_user',
-                                        username=user.username)}
+                                       username=user.username)}
         return '', 204, headers
-

@@ -1,6 +1,6 @@
 from flask import url_for
 
-from lib.tests import ViewTestMixin, assert_status_with_message
+from lib.tests import ViewTestMixin
 
 
 class TestGetPlans(ViewTestMixin):

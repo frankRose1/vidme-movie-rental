@@ -110,7 +110,6 @@ class User(ResourceMixin, db.Model):
 
         return False
 
-
     @classmethod
     def search(cls, query):
         """

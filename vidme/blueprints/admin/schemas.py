@@ -35,7 +35,7 @@ class UserSchema(marshmallow.Schema):
     #  account and to sort the results on the client
     class Meta:
         fields = ('username', 'email', 'role', 'sign_in_count',
-                  'last_sign_in_on', 'created_on','payment_id')
+                  'last_sign_in_on', 'created_on', 'payment_id')
 
 
 class UserDetailSchema(marshmallow.Schema):

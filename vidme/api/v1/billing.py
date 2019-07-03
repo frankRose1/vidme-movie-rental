@@ -1,7 +1,6 @@
 from flask import (
     request,
-    jsonify,
-    url_for
+    jsonify
 )
 from flask_jwt_extended import jwt_required, current_user
 
@@ -11,7 +10,6 @@ from vidme.blueprints.billing.models.invoice import Invoice
 from vidme.blueprints.billing.schemas import (
     create_edit_subscription_schema,
     credit_card_schema,
-    subscription_schema,
     invoices_schema
 )
 from lib.decorators import (

@@ -1,5 +1,7 @@
 # VidMe - Movie Rental API
-This is the back end restful API for a movie rental service. This is a project in my ongoing journey to get better with python web development. The goal is to use docker, flask, a SQL database, and maybe even add redis to create a movie rental business. Users can register for an account and then select one of 3 subscrition plans. Integration with stripe is used to set up subscription plans and recurring payments.
+As part of an ongoing journey to learn python web development the plan is to create a restful API for a movie rental business using flask, docker, stripe, and a postgres database. Currently, users can sign up, authenticate themselves, and access the billing API to do a number of things regarding subscribing to a plan, viewing billing info, and updating their billing information and plan. There's also a custom admin API to manage user accounts/subscriptions which will grow as more is added to the application. Future plans for this app are to maybe include redis and celery to allow for efficient emailing and of course adding the ability to rent/return movies.
+
+If running locally make sure to check ```example.env``` to see what you need for the ```.env``` file
 
 
 ## Getting set up
@@ -23,4 +25,7 @@ Using the CLI run ```docker-compose exec web vidme db reset --with-testdb```
     Send requests to http://192.168.99.100:8000
 
 ## CLI
-A custom CLI was built to make running common commands easier such as tests, flake8, and resetting/seeding the database. While the container is running, open a 2nd terminal and run ```docker-compose exec web vidme``` to see a list of commands.
+A custom CLI was built to make running common commands easier such as tests, flake8, and resetting/seeding the database. While the container is running, open a 2nd terminal(or run ```docker-compose up -d```) and run ```docker-compose exec web vidme``` to see a list of commands.
+
+## Tests
+If running tests make sure that you've already ran the ```docker-compose exec web vidme db reset --with-testdb``` command or there will be no test database. Once thats set up run ```docker-compose exec web vidme test```. Coverage is currently at 84%.
