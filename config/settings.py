@@ -18,6 +18,13 @@ SEED_ADMIN_EMAIL = 'dev@local.host'
 SEED_ADMIN_PASSWORD = 'devPassword'
 SEED_ADMIN_USERNAME = 'devAdmin1'
 
+# Celery
+CELERY_BROKER_URL = 'redis://:devpassword@redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://:devpassword@redis:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELEREY_REDIS_MAX_CONNECTIONS = 5
 
 # Allow browsers to securely persist auth tokens(by default jwt_extened only checks headers) but also
 # allow headers so that other clients can send an auth token too

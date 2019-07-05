@@ -59,6 +59,38 @@ class ResourceMixin(object):
         return field, direction
 
     @classmethod
+    def get_bulk_action_ids(cls, scope, ids, omit_ids=[], query=''):
+        """
+        Determine which IDs are to be modified.
+
+        :param scope: Affect all or only a subset of items
+        :type scope: str
+        :param ids: List of ids to be modified
+        :type ids: list
+        :param omit_ids: Remove one or more IDs from the list
+        :type omit_ids: list
+        :param query: Search query (if applicable)
+        :type query: str
+        :return: list
+        """
+        omit_ids = map(str, omiit_ids)
+
+        if scope == 'all_search_results':
+            # Change the scope to go from selected ids to all search results
+            ids = cls.query.with_entities(cls.id).filter(cls.search(query))
+
+            # SQLAlchemy returns a  list of tuples, need a list of strs
+            ids = [str(item[0]) for item in ids]
+
+        # Remove one or more items from the list, useful for preventing the
+        # current user from deleting themselves from the db
+        if omit_ids:
+            ids = [id for id in ids if id not in omit_ids]
+
+        return ids
+
+
+    @classmethod
     def bulk_delete(cls, ids):
         """
         Delete 1 or more model instances.

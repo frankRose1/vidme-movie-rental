@@ -1,6 +1,14 @@
 version: '2'
 
 services:
+  redis:
+    image: 'redis:3.0-alpine'
+    command: 'redis-server --requirepass devpassword'
+    volumes:
+      - 'redis:/var/lib/redis/data'
+    ports:
+      - '6379:6379'
+
   postgres:
     image: 'postgres:10.3-alpine'
     env_file:
@@ -26,5 +34,14 @@ services:
     volumes:
       - '.:/app'
 
+  celery:
+    build: .
+    command: 'celery worker -l info -A vidme.blueprints.admin.tasks'
+    env_file:
+      - '.env'
+    volumes:
+      - '.:/app'
+
 volumes:
+  redis:
   postgres:

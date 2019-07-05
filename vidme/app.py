@@ -1,4 +1,5 @@
 from flask import Flask, jsonify
+from celery import Celery
 
 import stripe
 
@@ -12,13 +13,41 @@ from vidme.api.v1.billing import (
     PlansView,
     InvoicesView
 )
-
 from vidme.extensions import (
     jwt,
     db,
     marshmallow
 )
 
+CELERY_TASK_LIST = []
+
+
+def create_celery_app(app=None):
+    """
+    Create a new Celery object and sync the Celery config to the Flask app's
+    config. Wrap all tasks in the context of the Flask app.
+
+    :param app: Flask app
+    :return: Celery app
+    """
+    app = app or create_app()
+
+    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'],
+                    include=CELERY_TASK_LIST)
+
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+    # set up context for each task
+    class ContextTask(TaskBase):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            # if the db is needed inside a task app context must be set
+            with app.app_context()
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
 
 def create_app(settings_override=None):
     """

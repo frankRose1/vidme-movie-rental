@@ -1,5 +1,6 @@
 from flask import request, url_for
 from flask_classful import route
+from flask_jwt_extended import current_user
 from sqlalchemy import text
 
 from vidme.api.v1 import V1FlaskView
@@ -182,3 +183,21 @@ class AdminView(V1FlaskView):
         headers = {'Location': url_for('AdminView:get_user',
                                        username=user.username)}
         return '', 204, headers
+
+    @route('/users/bulk_delete', methods=['DELETE'])
+    @admin_required
+    def delete_users(self):
+        """Option to bulk delete or delete a single user"""
+        # TODO validate the incoming ID's as an array
+
+        # scope == all IDs to be deleted
+        # query == search term so we know which suers to delete. might not need?
+        ids = User.get_bulk_action_ids(omit_ids=[current_user.id])
+        delete_count = User.bulk_delete(ids)
+
+        response = {'data': {
+            deleted: True,
+            message: '{0} user(s) were scheduled tp be deleted.'.format(
+                delete_count)
+        }}
+        return response
