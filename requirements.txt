@@ -3,11 +3,13 @@ Flask==1.0.*
 # App server for both dev and prod
 gunicorn==19.8.*
 
-# Database
+# Database and workers
 psycopg2-binary==2.7.*
 Flask-SQLAlchemy==2.3.*
 SQLAlchemy-Utils==0.32
 SQLAlchemy==1.2.0
+redis==3.2.*
+celery==4.1.*
 
 # API
 flask-classful==0.14

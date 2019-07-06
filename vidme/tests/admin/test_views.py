@@ -259,3 +259,45 @@ class TestGetUsers(ViewTestMixin):
         assert data['has_prev'] is False
         assert data['next_num'] is None
         assert data['prev_num'] is None
+
+
+class TestBulkDeleteUsers(ViewTestMixin):
+    def test_invalid_data(self):
+        """Return a 400 if no data is sent"""
+        self.authenticate()
+        data = {}
+        response = self.client.delete(url_for('AdminView:delete_users'),
+                                      json=data)
+        assert response.status_code == 400
+        assert response.get_json()['error'] == 'Invalid input.'
+
+    def test_invalid_bulk_ids(self):
+        """Invalid bulk ids fail schema validation"""
+        self.authenticate()
+        data = {
+            'bulk_ids': ['str', 'invalid']
+        }
+        response = self.client.delete(url_for('AdminView:delete_users'),
+                                      json=data)
+        errors = response.get_json()['error']
+        assert response.status_code == 422
+        assert errors['bulk_ids']['0'][0] == 'Not a valid integer.'
+
+    def test_bulk_delete_nothing(self, mock_stripe):
+        """
+        The current user will never be scheduled to be deleted in the case
+        they're the last admin in system
+        """
+        old_count = User.query.count()
+        self.authenticate()
+        data = {
+            'bulk_ids': [1],
+        }
+        response = self.client.delete(url_for('AdminView:delete_users'),
+                                      json=data)
+        print(response.get_json())
+        json_data = response.get_json()['data']
+        assert response.status_code == 200
+        assert json_data['message'] == '0 user(s) were scehduled to be deleted.'
+        new_count = User.query.count()
+        assert old_count == new_count

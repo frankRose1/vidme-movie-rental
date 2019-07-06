@@ -130,6 +130,37 @@ class User(ResourceMixin, db.Model):
         # or_ allows a match on the email OR username
         return or_(*search_chain)
 
+    @classmethod
+    def bulk_delete(cls, ids):
+        """
+        Override the bulk_deleted method on ResourceMixin because users need
+        to be deleted one at a time while also being deleted on stripe.
+        
+        :param ids: List of ids to be deleted
+        :types ids: list
+        :return: int
+        """
+        delete_count = 0
+
+        for id in ids:
+            user = User.query.get(id)
+
+            if user is None:
+                continue
+            # see if user is currently subbed
+            if user.payment_id is None:
+                user.delete()
+            else:
+                subscription = Subscription()
+                cancelled = subscription.cancel(user=user)
+                # if cancelled sub on stripe successfully, delete locally
+                if cancelled:
+                    user.delete()
+
+            delete_count += 1
+
+        return delete_count
+
     def authenticated(self, with_password=True, password=''):
         """
         Ensure a user is authenticated, and optionally check their password

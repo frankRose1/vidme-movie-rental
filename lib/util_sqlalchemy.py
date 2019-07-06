@@ -73,7 +73,7 @@ class ResourceMixin(object):
         :type query: str
         :return: list
         """
-        omit_ids = map(str, omiit_ids)
+        omit_ids = map(str, omit_ids)
 
         if scope == 'all_search_results':
             # Change the scope to go from selected ids to all search results

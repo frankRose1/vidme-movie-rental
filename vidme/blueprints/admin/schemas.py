@@ -31,10 +31,8 @@ class AdminEditUserschema(marshmallow.Schema):
 
 class UserSchema(marshmallow.Schema):
     """For dumping a list of user data in the admin view."""
-    # Nested schema for billing info/ subscription? TO show if a user has an
-    #  account and to sort the results on the client
     class Meta:
-        fields = ('username', 'email', 'role', 'sign_in_count',
+        fields = ('id', 'username', 'email', 'role', 'sign_in_count',
                   'last_sign_in_on', 'created_on', 'payment_id')
 
 
@@ -53,6 +51,19 @@ class UserDetailSchema(marshmallow.Schema):
     subscription = fields.Nested(SubscriptionSchema)
 
 
+class BulkDeleteSchema(marshmallow.Schema):
+    """
+    Admins can delete a single user, or a list of users at once.
+
+    ids is a list of ids to be deleted
+    scope can be "all_search_results" in which case the delete view will
+    filter query results by request.args.get('q')
+    """
+    bulk_ids = fields.List(fields.Int(), required=True)
+    scope = fields.Str(required=False, missing='')
+
+
 admin_edit_user_schema = AdminEditUserschema()
 users_schema = UserSchema(many=True)
 user_detail_schema = UserDetailSchema()
+bulk_delete_schema = BulkDeleteSchema()

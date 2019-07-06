@@ -19,7 +19,9 @@ from vidme.extensions import (
     marshmallow
 )
 
-CELERY_TASK_LIST = []
+CELERY_TASK_LIST = [
+    'vidme.blueprints.admin.tasks',
+]
 
 
 def create_celery_app(app=None):
@@ -43,11 +45,12 @@ def create_celery_app(app=None):
 
         def __call__(self, *args, **kwargs):
             # if the db is needed inside a task app context must be set
-            with app.app_context()
+            with app.app_context():
                 return TaskBase.__call__(self, *args, **kwargs)
 
     celery.Task = ContextTask
     return celery
+
 
 def create_app(settings_override=None):
     """

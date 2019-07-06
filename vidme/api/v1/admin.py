@@ -13,10 +13,10 @@ from vidme.blueprints.user.models import User
 from vidme.blueprints.admin.schemas import (
     admin_edit_user_schema,
     users_schema,
-    user_detail_schema
+    user_detail_schema,
+    bulk_delete_schema
 )
 from vidme.blueprints.billing.schemas import invoices_schema
-
 
 USER_NOT_FOUND = 'User not found.'
 
@@ -188,16 +188,27 @@ class AdminView(V1FlaskView):
     @admin_required
     def delete_users(self):
         """Option to bulk delete or delete a single user"""
-        # TODO validate the incoming ID's as an array
+        json_data = request.get_json()
+        if not json_data:
+            response = {'error': 'Invalid input.'}
+            return response, 400
 
-        # scope == all IDs to be deleted
-        # query == search term so we know which suers to delete. might not need?
-        ids = User.get_bulk_action_ids(omit_ids=[current_user.id])
-        delete_count = User.bulk_delete(ids)
+        data, errors = bulk_delete_schema.load(json_data)
+        if errors:
+            response = {'error': errors}
+            return response, 422
+
+        ids = User.get_bulk_action_ids(scope=data['scope'], ids=data['bulk_ids'],
+                                       omit_ids=[current_user.id], 
+                                       query=request.args.get('q', ''))
+
+        # use a celery task to do this in the background
+        from vidme.blueprints.admin.tasks import delete_users
+        delete_users.delay(ids)
 
         response = {'data': {
-            deleted: True,
-            message: '{0} user(s) were scheduled tp be deleted.'.format(
-                delete_count)
+            'deleted': True,
+            'message': '{0} user(s) were scheduled to be deleted.'.format(
+                len(ids))
         }}
         return response
