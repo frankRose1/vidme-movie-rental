@@ -13,6 +13,15 @@ db_uri = 'postgresql://{0}:{1}@postgres:5432/{2}'.format(os.environ['POSTGRES_US
 SQLALCHEMY_DATABASE_URI = db_uri
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+# Flask-Mail
+MAIL_DEFAULT_SENDER = 'contact@local.host'
+MAIL_SERVER = 'smtp.gmail.com'
+MAIL_PORT = 587
+MAIL_USE_TLS = True
+MAIL_USE_SSL = False
+MAIL_USERNAME = 'you@gmail.com'
+MAIL_PASSWORD = 'yourpassword'
+
 # Seed user
 SEED_ADMIN_EMAIL = 'dev@local.host'
 SEED_ADMIN_PASSWORD = 'devPassword'
@@ -49,9 +58,7 @@ JWT_ACCESS_COOKIE_PATH = '/'
 # Enable CSRF double submit protection (http://www.redotheweb.com/2015/11/09/api-security.html)
 JWT_COOKIE_CSRF_PROTECT = True
 
-# Stripe
-STRIPE_SECRET_KEY = os.environ['STRIPE_SECRET_KEY']
-STRIPE_PUBLISHABLE_KEY = os.environ['STRIPE_PUBLISHABLE_KEY']
+# Stripe(publishable and secret key should go in instance.settings)
 STRIPE_API_VERSION = '2018-02-28' # tell the stripe python project which version to use
 STRIPE_PLANS = {
   '0': {

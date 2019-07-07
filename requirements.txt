@@ -27,3 +27,4 @@ stripe==1.82.*
 
 # extensions and libraries
 pytz==2019.1
+Flask-Mail==0.9.*

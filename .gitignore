@@ -4,3 +4,4 @@
 .env
 *.pyc
 .pytest_cache
+instance/settings.py

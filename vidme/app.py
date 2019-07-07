@@ -16,14 +16,15 @@ from vidme.api.v1.billing import (
 from vidme.extensions import (
     jwt,
     db,
-    marshmallow
+    marshmallow,
+    mail
 )
 
 CELERY_TASK_LIST = [
     'vidme.blueprints.admin.tasks',
 ]
 
-# TODO 1) set up additional tasks password reset, 2) configure flask mail
+# TODO 1) set up additional tasks password reset
 def create_celery_app(app=None):
     """
     Create a new Celery object and sync the Celery config to the Flask app's
@@ -62,6 +63,7 @@ def create_app(settings_override=None):
     app = Flask(__name__, instance_relative_config=True)
 
     app.config.from_object('config.settings')
+    # overide config.settings with instance.settings(if there is one)
     app.config.from_pyfile('settings.py', silent=True)
 
     if settings_override:
@@ -98,6 +100,7 @@ def extensions(app):
     jwt.init_app(app)
     db.init_app(app)
     marshmallow.init_app(app)
+    mail.init_app(app)
 
     return None
 

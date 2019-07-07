@@ -1,7 +1,7 @@
 # VidMe - Movie Rental API
 As part of an ongoing journey to learn python web development the plan is to create a restful API for a movie rental business using flask, docker, stripe, and a postgres database. Currently, users can sign up, authenticate themselves, and access the billing API to do a number of things regarding subscribing to a plan, viewing billing info, and updating their billing information and plan. There's also a custom admin API to manage user accounts/subscriptions which will grow as more is added to the application. Future plans for this app are to maybe include redis and celery to allow for efficient emailing and of course adding the ability to rent/return movies.
 
-If running locally make sure to check ```example.env``` to see what you need for the ```.env``` file
+If running locally make sure to check ```example.env``` to see what you need for the ```.env``` file and ```instance/settings.py.prod_example``` will show you values you would need for production for the ```instance/settings.py```
 
 
 ## Getting set up
