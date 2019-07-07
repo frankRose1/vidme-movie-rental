@@ -1,0 +1,11 @@
+Hi {{ user.email }},
+
+Please click the link below to complete your registration:
+
+{{ url_for('UsersView:activate_account', activation_token=activation_token, _external=True) }}
+
+If you did not register for an account with VidMe, please ignore this e-mail. An account will not be activated
+unless you access the link above.
+
+Thanks,
+VidMe

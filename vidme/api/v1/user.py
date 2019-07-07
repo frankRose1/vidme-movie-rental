@@ -1,4 +1,5 @@
 from flask import request, url_for
+from flask_classful import route
 
 from vidme.api import JSONViewMixin
 from vidme.api.v1 import V1FlaskView
@@ -26,5 +27,23 @@ class UsersView(JSONViewMixin, V1FlaskView):
         user.password = User.encrypt_password(data.get('password'))
         user.save()
 
+        # send verification email with celery as a background task
+        User.init_verify_email(user.email)
+
+        message = ('Please check the email you registered with for a'
+                  ' verification email.')
+        response = {'data': {
+            'created': True,
+            'message': message
+        }}
         headers = {'Location': url_for('AuthView:post')}
-        return '', 201, headers
+        return response, 201, headers
+
+    @route('/activate_account/<activation_token>', methods=['GET'])
+    def activate_account(self, username):
+        response = {'data': {
+            'activated': True,
+            'message': 'Your account has been activated.'
+        }}
+        headers = {'Location': url_for('AuthView:post')}
+        return response, 200, headers

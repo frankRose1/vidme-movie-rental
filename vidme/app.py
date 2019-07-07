@@ -22,9 +22,10 @@ from vidme.extensions import (
 
 CELERY_TASK_LIST = [
     'vidme.blueprints.admin.tasks',
+    'vidme.blueprints.user.tasks',
 ]
 
-# TODO 1) set up additional tasks password reset
+
 def create_celery_app(app=None):
     """
     Create a new Celery object and sync the Celery config to the Flask app's

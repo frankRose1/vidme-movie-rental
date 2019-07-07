@@ -2,8 +2,10 @@ import datetime
 from collections import OrderedDict
 
 import pytz
+from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_, text
+from itsdangerous import TimedJSONWebSignatureSerializer
 
 from lib.util_sqlalchemy import ResourceMixin, AwareDateTime
 from vidme.blueprints.billing.models.credit_card import CreditCard
@@ -160,6 +162,58 @@ class User(ResourceMixin, db.Model):
             delete_count += 1
 
         return delete_count
+
+    @classmethod
+    def init_verify_email(cls, identity):
+        """
+        Generate a one time use token to be sent to a User's email. This will
+        verify their email address and activate their account so that they can
+        authenticate themselves.
+
+        :param identity: User e-mail address or username
+        :type identity: str
+        :return: User instance
+        """
+        u = User.find_by_identity(identity)
+        activation_token = u.serialize_token(expiration=86400)
+
+        # send the email as a background task with celery
+        from vidme.blueprints.user.tasks import (
+            deliver_verification_email)
+        deliver_verification_email.delay(u.id, activation_token)
+
+    @classmethod
+    def deserialize_token(cls, token):
+        """
+        Obtain a user from de-serializing a signed token.
+
+        :param token: Signed token
+        :type token: str
+        :return: User instance or None
+        """
+        private_key = TimedJSONWebSignatureSerializer(
+            current_app.config['SECRET_KEY'])
+        try:
+            decoded_payload = private_key.loads(token)
+
+            return User.find_by_identity(decoded_payload.get('user_email'))
+        except Exception:
+            return None
+
+    def serialize_token(self, expiration=3600):
+        """
+        Create a one time use token for things such as sending a confirmation
+        email.
+
+        :param expiration: Seconds until it expires, defaults to 1 hour
+        :type expiration: int
+        :return: JSON
+        """
+        private_key = current_app.config['SECRET_KEY']
+
+        serializer = TimedJSONWebSignatureSerializer(private_key, expiration)
+        return serializer.dumps({'user_email': self.email}).decode('utf-8')
+
 
     def authenticated(self, with_password=True, password=''):
         """
