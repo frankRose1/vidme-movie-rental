@@ -3,9 +3,9 @@ from flask_classful import route
 from flask_jwt_extended import current_user
 from sqlalchemy import text
 
+from vidme.api import JSONViewMixin
 from vidme.api.v1 import V1FlaskView
 from vidme.blueprints.admin.models import Dashboard
-from lib.representations import output_json
 from lib.decorators import admin_required, handle_stripe_exceptions
 from vidme.blueprints.billing.models.subscription import Subscription
 from vidme.blueprints.billing.models.invoice import Invoice
@@ -21,12 +21,7 @@ from vidme.blueprints.billing.schemas import invoices_schema
 USER_NOT_FOUND = 'User not found.'
 
 
-class AdminView(V1FlaskView):
-
-    representations = {
-        'application/json': output_json,
-        'flask-classful/default': output_json,
-    }
+class AdminView(JSONViewMixin, V1FlaskView):
 
     @admin_required
     def index(self):

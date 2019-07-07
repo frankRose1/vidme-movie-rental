@@ -1,9 +1,10 @@
 from flask import (
     request,
-    jsonify
+    url_for
 )
 from flask_jwt_extended import jwt_required, current_user
 
+from vidme.api import JSONViewMixin
 from vidme.api.v1 import V1FlaskView
 from vidme.blueprints.billing.models.subscription import Subscription
 from vidme.blueprints.billing.models.invoice import Invoice
@@ -18,7 +19,7 @@ from lib.decorators import (
 )
 
 
-class SubscriptionsView(V1FlaskView):
+class SubscriptionsView(JSONViewMixin, V1FlaskView):
 
     @jwt_required
     @handle_stripe_exceptions
@@ -27,25 +28,25 @@ class SubscriptionsView(V1FlaskView):
             response = {
                 'error': 'You already have an active subscription.'
             }
-            return jsonify(response), 400
+            return response, 400
 
         # validate the incoming data
         json_data = request.get_json()
 
         if not json_data:
             response = {'error': 'Invalid input.'}
-            return jsonify(response), 400
+            return response, 400
 
         data, errors = create_edit_subscription_schema.load(json_data)
 
         if errors:
-            return jsonify({'error': errors}), 422
+            return {'error': errors}, 422
 
         # get the subscription plan, send a 404 if it doesnt exist
         subscription_plan = Subscription.get_plan(data['plan'])
         if subscription_plan is None:
             response = {'error': 'Plan not found.'}
-            return jsonify(response), 404
+            return response, 404
 
         # if data is valid create a subscription
         subscription = Subscription()
@@ -54,7 +55,8 @@ class SubscriptionsView(V1FlaskView):
                             plan=data['plan'],
                             token=data['stripe_token'])
 
-        return jsonify({}), 201
+        headers = {'Location': url_for('SubscriptionsView:index')}
+        return '', 201, headers
 
     @jwt_required
     @handle_stripe_exceptions
@@ -66,20 +68,20 @@ class SubscriptionsView(V1FlaskView):
             response = {
                 'error': 'You do not have a payment method on file.'
             }
-            return jsonify(response), 404
+            return response, 404
 
         json_data = request.get_json()
 
         if not json_data:
             response = {'error': 'Invalid input.'}
-            return jsonify(response), 400
+            return response, 400
 
         data, errors = create_edit_subscription_schema.load(json_data,
                                                             partial=('plan',))
 
         if errors:
             response = {'error': errors}
-            return jsonify(response), 422
+            return response, 422
 
         card = current_user.credit_card
 
@@ -90,19 +92,18 @@ class SubscriptionsView(V1FlaskView):
                                            credit_card=card,
                                            name=data['customer_name'],
                                            token=data['stripe_token'])
-        return jsonify({}), 204
+        
+        headers = {'Location': url_for('SubscriptionsView:index')}
+        return '', 204, headers
 
     @jwt_required
     def index(self):
-        """
-        Get the current users billing info, good for pre-populating the
-        update form
-        """
+        """ Get the current users CC and current plan info """
         if not current_user.credit_card:
             response = {
                 'error': 'No credit card information was found.'
             }
-            return jsonify(response), 404
+            return response, 404
 
         active_plan = Subscription.get_plan(current_user.subscription.plan)
         credit_card = credit_card_schema.dump(current_user.credit_card)
@@ -110,7 +111,7 @@ class SubscriptionsView(V1FlaskView):
             'credit_card': credit_card.data,
             'active_plan': active_plan
         }}
-        return jsonify(response), 200
+        return response, 200
 
     @jwt_and_subscription_required
     @handle_stripe_exceptions
@@ -119,11 +120,11 @@ class SubscriptionsView(V1FlaskView):
         subscription = Subscription()
         subscription.cancel(user=current_user)
 
-        # TODO set headers to url_for("SubscriptionView:post")
-        return jsonify({}), 204
+        headers = {'Location': url_for('SubscriptionsView:post')}
+        return '', 204, headers
 
 
-class PlansView(V1FlaskView):
+class PlansView(JSONViewMixin, V1FlaskView):
 
     def index(self):
         """Show all of the available plans"""
@@ -131,7 +132,7 @@ class PlansView(V1FlaskView):
         response = {'data': {
             'plans': plans
         }}
-        return jsonify(response), 200
+        return response, 200
 
     @jwt_and_subscription_required
     @handle_stripe_exceptions
@@ -145,33 +146,34 @@ class PlansView(V1FlaskView):
 
         if not json_data:
             response = {'error': 'Invalid input.'}
-            return jsonify(response), 400
+            return response, 400
 
         partials = ('stripe_token', 'customer_name',)
         data, errors = create_edit_subscription_schema.load(json_data,
                                                             partial=partials)
         if errors:
             response = {'error': errors}
-            return jsonify(response), 422
+            return response, 422
         # plan should be bronze, gold, or platinum
         new_plan = Subscription.get_plan(data['plan'])
         if new_plan is None:
             response = {'error': 'Plan not found.'}
-            return jsonify(response), 404
+            return response, 404
 
         current_plan = current_user.subscription.plan
         if current_plan == data['plan']:
             response = {
                 'error': 'New plan can\'t be the same as your old plan'}
-            return jsonify(response), 400
+            return response, 400
 
         subscription = Subscription()
         subscription.update(user=current_user, plan=data['plan'])
-        # TODO set headers url_for("SubscriptionView:index")
-        return jsonify({}), 204
+
+        headers = {'Location': url_for('SubscriptionsView:index')}
+        return '', 204, headers
 
 
-class InvoicesView(V1FlaskView):
+class InvoicesView(JSONViewMixin, V1FlaskView):
     @jwt_required
     @handle_stripe_exceptions
     def index(self):
@@ -195,4 +197,4 @@ class InvoicesView(V1FlaskView):
             'upcoming_invoice': upcoming_invoice
         }}
 
-        return jsonify(response), 200
+        return response, 200

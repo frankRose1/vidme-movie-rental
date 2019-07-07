@@ -295,9 +295,9 @@ class TestBulkDeleteUsers(ViewTestMixin):
         }
         response = self.client.delete(url_for('AdminView:delete_users'),
                                       json=data)
-        print(response.get_json())
         json_data = response.get_json()['data']
+
         assert response.status_code == 200
-        assert json_data['message'] == '0 user(s) were scehduled to be deleted.'
+        assert json_data['message'] == '0 user(s) were scheduled to be deleted.'
         new_count = User.query.count()
         assert old_count == new_count

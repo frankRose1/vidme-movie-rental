@@ -23,7 +23,7 @@ CELERY_TASK_LIST = [
     'vidme.blueprints.admin.tasks',
 ]
 
-
+# TODO 1) set up additional tasks password reset, 2) configure flask mail
 def create_celery_app(app=None):
     """
     Create a new Celery object and sync the Celery config to the Flask app's

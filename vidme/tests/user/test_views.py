@@ -69,3 +69,4 @@ class TestRegister(ViewTestMixin):
         }
         response = self.client.post(url_for('UsersView:post'), json=user)
         assert response.status_code == 201
+        assert response.headers['Location'] == url_for('AuthView:post')

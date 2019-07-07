@@ -83,10 +83,13 @@ class ResourceMixin(object):
             ids = [str(item[0]) for item in ids]
 
         # Remove one or more items from the list, useful for preventing the
-        # current user from deleting themselves from the db
+        # current user from deleting themselves from the db when bulk deleting
+        # user accounts
         if omit_ids:
-            ids = [id for id in ids if id not in omit_ids]
+            ids = [str(id) for id in ids if str(id) not in omit_ids]
 
+        print(omit_ids)
+        print(ids)
         return ids
 
 

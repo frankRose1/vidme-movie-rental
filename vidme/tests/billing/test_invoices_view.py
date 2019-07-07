@@ -11,7 +11,6 @@ class TestInvoicesView(ViewTestMixin):
         """
         self.authenticate()
         response = self.client.get(url_for('InvoicesView:index'))
-        print(response.get_json())
         data = response.get_json()['data']
         invoice_history = data['invoices']
 

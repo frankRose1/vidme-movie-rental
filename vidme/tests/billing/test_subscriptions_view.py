@@ -135,4 +135,7 @@ class TestCancelSubscription(ViewTestMixin):
         """Successfully cancels a user's subscription"""
         self.authenticate(identity='subscriber@local.host')
         response = self.client.delete(url_for('SubscriptionsView:delete'))
+        location = response.headers['Location']
+
         assert response.status_code == 204
+        assert location == url_for('SubscriptionsView:post')
