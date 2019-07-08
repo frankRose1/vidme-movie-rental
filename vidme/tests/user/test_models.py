@@ -18,3 +18,7 @@ class TestUser(object):
         tampered_token = 'hacked!!{0}'.format(token)
         user = User.deserialize_token(tampered_token)
         assert user is None
+
+    def test_is_active(self):
+        user = User.find_by_identity('testAdmin@local.host')
+        assert user.is_active() is True

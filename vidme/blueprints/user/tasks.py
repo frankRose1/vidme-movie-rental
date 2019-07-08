@@ -23,8 +23,8 @@ def deliver_verification_email(user_id, activation_token):
 
     ctx = {'user': user, 'activation_token':activation_token}
 
-    send_template_message(subject='Password Reset From VidMe',
+    send_template_message(subject='Account Verification From VidMe',
                           recipients=[user.email],
-                          template='user/mail/verify_email', ctx=ctx)
+                          template='mail/user/verify_email', ctx=ctx)
 
     return None

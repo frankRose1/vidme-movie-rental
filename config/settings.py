@@ -14,6 +14,8 @@ SQLALCHEMY_DATABASE_URI = db_uri
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 # Flask-Mail
+# if using gmail may need to "allow less secure apps"
+# https://myaccount.google.com/lesssecureapps
 MAIL_DEFAULT_SENDER = 'contact@local.host'
 MAIL_SERVER = 'smtp.gmail.com'
 MAIL_PORT = 587

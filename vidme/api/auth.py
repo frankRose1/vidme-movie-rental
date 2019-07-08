@@ -59,7 +59,7 @@ class AuthView(FlaskView):
                 error = ('This account is not active. If you recently signed'
                         ' up for an account, check your email for a'
                         ' verification link.')
-                return {'error': error}, 400
+                return jsonify({'error': error}), 400
 
         response = jsonify({
             'error': 'Invalid credentials.'

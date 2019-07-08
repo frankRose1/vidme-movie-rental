@@ -45,6 +45,17 @@ class TestAuthenticate(ViewTestMixin):
         response = self.client.post(url_for('AuthView:post'), json=data)
         assert_status_with_message(401, response, 'Invalid credentials.')
 
+    def test_account_not_active(self, users):
+        """Return a 400 if a user's account has not been activated"""
+        data = {
+            'identity': 'member@local.host',
+            'password': 'password'
+        }
+        response = self.client.post(url_for('AuthView:post'), json=data)
+        message = ('This account is not active. If you recently signed up for'
+                   ' an account, check your email for a verification link.')
+        assert_status_with_message(400, response, message)
+
     def test_authenticate(self):
         """Return an access token for valid crdentials"""
         data = {
@@ -52,4 +63,7 @@ class TestAuthenticate(ViewTestMixin):
             'password': 'password'
         }
         response = self.client.post(url_for('AuthView:post'), json=data)
+        json_data = response.get_json()['data']
+
         assert response.status_code == 200
+        assert 'access_token' in json_data
