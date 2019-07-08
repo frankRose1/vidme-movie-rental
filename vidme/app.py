@@ -41,7 +41,7 @@ def create_celery_app(app=None):
 
     celery.conf.update(app.config)
     TaskBase = celery.Task
-    # set up context for each task
+
     class ContextTask(TaskBase):
         abstract = True
 

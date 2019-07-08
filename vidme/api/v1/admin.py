@@ -193,8 +193,9 @@ class AdminView(JSONViewMixin, V1FlaskView):
             response = {'error': errors}
             return response, 422
 
-        ids = User.get_bulk_action_ids(scope=data['scope'], ids=data['bulk_ids'],
-                                       omit_ids=[current_user.id], 
+        ids = User.get_bulk_action_ids(scope=data['scope'],
+                                       ids=data['bulk_ids'],
+                                       omit_ids=[current_user.id],
                                        query=request.args.get('q', ''))
 
         # use a celery task to do this in the background

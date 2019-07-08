@@ -11,11 +11,5 @@ MAIL_PASSWORD = 'yourPassword'
 STRIPE_PUBLISHABLE_KEY = 'your_stripe_publishable'
 STRIPE_SECRET_KEY = 'your_stripe_secret'
 
-CELERY_BROKER_URL = 'redis://:amuchmoresecurepassword@redis:6379/0'
-CELERY_RESULT_BACKEND = 'redis://:amuchmoresecurepassword@redis:6379/0'
-
-db_uri = 'postgresql://vidme:anEvenMoreSecurePassword@postgres:5432/vidme'
-SQLALCHEMY_DATABASE_URI = db_uri
-
-SEED_ADMIN_EMAIL = 'you@realemailaccount.com'
+SEED_ADMIN_EMAIL = 'yourEmail@gmail.com'
 SEED_ADMIN_PASSWORD = 'thebestpasswordyouevermade'

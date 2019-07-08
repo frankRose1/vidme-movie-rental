@@ -139,7 +139,7 @@ class User(ResourceMixin, db.Model):
         """
         Override the bulk_deleted method on ResourceMixin because users need
         to be deleted one at a time while also being deleted on stripe.
-        
+
         :param ids: List of ids to be deleted
         :types ids: list
         :return: int
@@ -215,7 +215,6 @@ class User(ResourceMixin, db.Model):
 
         serializer = TimedJSONWebSignatureSerializer(private_key, expiration)
         return serializer.dumps({'user_email': self.email}).decode('utf-8')
-
 
     def authenticated(self, with_password=True, password=''):
         """

@@ -12,7 +12,7 @@ class UsersView(JSONViewMixin, V1FlaskView):
         json_data = request.get_json()
 
         if not json_data:
-            response ={'error': 'Invalid input.'}
+            response = {'error': 'Invalid input.'}
             return response, 400
 
         data, errors = registration_schema.load(json_data)
@@ -31,7 +31,7 @@ class UsersView(JSONViewMixin, V1FlaskView):
         User.init_verify_email(user.email)
 
         message = ('Please check the email you registered with for a'
-                  ' verification email.')
+                   ' verification email.')
         response = {'data': {
             'created': True,
             'message': message

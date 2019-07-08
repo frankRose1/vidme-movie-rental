@@ -92,7 +92,7 @@ class SubscriptionsView(JSONViewMixin, V1FlaskView):
                                            credit_card=card,
                                            name=data['customer_name'],
                                            token=data['stripe_token'])
-        
+
         headers = {'Location': url_for('SubscriptionsView:index')}
         return '', 204, headers
 

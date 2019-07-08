@@ -21,7 +21,7 @@ def deliver_verification_email(user_id, activation_token):
     if user is None:
         return None
 
-    ctx = {'user': user, 'activation_token':activation_token}
+    ctx = {'user': user, 'activation_token': activation_token}
 
     send_template_message(subject='Account Verification From VidMe',
                           recipients=[user.email],

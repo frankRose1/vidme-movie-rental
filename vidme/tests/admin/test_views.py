@@ -298,6 +298,7 @@ class TestBulkDeleteUsers(ViewTestMixin):
         json_data = response.get_json()['data']
 
         assert response.status_code == 200
-        assert json_data['message'] == '0 user(s) were scheduled to be deleted.'
+        assert json_data['message'] == ('0 user(s) were scheduled to be'
+                                        ' deleted.')
         new_count = User.query.count()
         assert old_count == new_count
