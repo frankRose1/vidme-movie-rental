@@ -40,6 +40,8 @@ class User(ResourceMixin, db.Model):
     email = db.Column(db.String(255), unique=True, index=True, nullable=False,
                       server_default='')
     password = db.Column(db.String(128), nullable=False, server_default='')
+    active = db.Column('is_active', db.Boolean(), nullable=False,
+                       server_default='0')
 
     # Billing
     name = db.Column(db.String(255), index=True)
@@ -251,3 +253,11 @@ class User(ResourceMixin, db.Model):
         self.current_sign_in_ip = ip_address
 
         return self.save()
+
+    def is_active(self):
+        """
+        Return whether or not the user account is active
+
+        :return: bool
+        """
+        return self.active

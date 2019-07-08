@@ -25,7 +25,10 @@ CELERY_TASK_LIST = [
     'vidme.blueprints.user.tasks',
 ]
 
-
+# TODO
+# - Update AdminView to account for active accounts
+# - Test new email task
+# - Update TESTS UsersView and AuthView to account for active accounts
 def create_celery_app(app=None):
     """
     Create a new Celery object and sync the Celery config to the Flask app's

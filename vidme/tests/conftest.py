@@ -76,7 +76,8 @@ def db(app):
         'role': 'admin',
         'email': 'testAdmin@local.host',
         'username': 'testAdmin1',
-        'password': 'password'
+        'password': 'password',
+        'active': True
     }
 
     admin = User(**params)
@@ -101,6 +102,18 @@ def session(db):
     yield db.session
 
     db.session.rollback()
+
+
+@pytest.fixture(scope='session')
+def token(db):
+    """
+    Serialize a JWS token.
+
+    :param db: Pytest fixture
+    :return: JWS token
+    """
+    user = User.find_by_identity('testAdmin@local.host')
+    return user.serialize_token()
 
 
 @pytest.yield_fixture(scope='function')
@@ -193,7 +206,8 @@ def subscriptions(db):
         'username': 'firstSub1',
         'name': 'Subby',
         'payment_id': 'cus_000',
-        'password': 'password'
+        'password': 'password',
+        'active': True
     }
 
     subscriber = User(**params)

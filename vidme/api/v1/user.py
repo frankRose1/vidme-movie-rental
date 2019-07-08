@@ -40,7 +40,16 @@ class UsersView(JSONViewMixin, V1FlaskView):
         return response, 201, headers
 
     @route('/activate_account/<activation_token>', methods=['GET'])
-    def activate_account(self, username):
+    def activate_account(self, activation_token):
+        user = User.deserialize_token(activation_token)
+
+        if user is None:
+            err = 'Your activation token has expired or was tampered with.'
+            return {'error': err}, 400
+
+        user.active = True
+        user.save()
+
         response = {'data': {
             'activated': True,
             'message': 'Your account has been activated.'

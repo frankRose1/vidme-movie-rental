@@ -36,24 +36,30 @@ class AuthView(FlaskView):
         user = User.find_by_identity(data['identity'])
 
         if user and user.authenticated(password=data['password']):
-            # identity is used to lookup a user on protected endpoints
-            access_token = create_access_token(identity=user.username)
+            if user.is_active():
+                # identity is used to lookup a user on protected endpoints
+                access_token = create_access_token(identity=user.username)
 
-            user.update_activity_tracking(request.remote_addr)
+                user.update_activity_tracking(request.remote_addr)
 
-            response = jsonify({
-                'data': {
-                    'access_token': access_token
-                }
-            })
+                response = jsonify({
+                    'data': {
+                        'access_token': access_token
+                    }
+                })
 
-            # Set the JWTs and the CSRF double submit protection cookies
-            # Clients such as web browsers support cookies and
-            # "set_access_cookies" will set two cookies in the browser,
-            # 1)access_token 2)CSRF token
-            set_access_cookies(response, access_token)
+                # Set the JWTs and the CSRF double submit protection cookies
+                # Clients such as web browsers support cookies and
+                # "set_access_cookies" will set two cookies in the browser,
+                # 1)access_token 2)CSRF token
+                set_access_cookies(response, access_token)
 
-            return response, 200
+                return response, 200
+            else:
+                error = ('This account is not active. If you recently signed'
+                        ' up for an account, check your email for a'
+                        ' verification link.')
+                return {'error': error}, 400
 
         response = jsonify({
             'error': 'Invalid credentials.'
