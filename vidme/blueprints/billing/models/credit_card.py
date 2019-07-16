@@ -60,3 +60,21 @@ class CreditCard(ResourceMixin, db.Model):
             'is_expiring': CreditCard.is_expiring_soon(exp_date=exp_date)
         }
         return card
+
+    @classmethod
+    def mark_old_credit_cards(cls, compare_date=None):
+        """
+        Mark credit cards that are going to expire soon or that have already
+        expired.
+
+        :param compare_date: Date to compare at
+        :type compare_date: date
+        :return: Result of updating the database records
+        """
+        today_with_delta = timedelta_months(
+            CreditCard.IS_EXPIRING_THRESHOLD_MONTHS, compare_date)
+
+        CreditCard.query.filter(CreditCard.exp_date <= today_with_delta) \
+            .update({CreditCard.is_expiring: True})
+
+        return db.session.commit()

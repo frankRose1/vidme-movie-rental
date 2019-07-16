@@ -1,6 +1,9 @@
 from datetime import timedelta
 import os
 
+from celery.schedules import crontab
+
+
 DEBUG = True
 
 SERVER_NAME = '192.168.99.100:8000' # if on Docker For Windows/Mac use "localhost:8000"
@@ -36,6 +39,12 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELEREY_REDIS_MAX_CONNECTIONS = 5
+CELERYBEAT_SCHEDULE = {
+    'mark-soon-to-expire-credit-cards': {
+        'task': 'vidme.blueprints.billing.tasks.mark_old_credit_cards',
+        'schedule': crontab(hour=0, minute=0)
+    }
+}
 
 # Allow browsers to securely persist auth tokens(by default jwt_extened only checks headers) but also
 # allow headers so that other clients can send an auth token too
