@@ -29,6 +29,27 @@ class TestCreditCard(object):
         for date in exp_dates:
             assert CreditCard.is_expiring_soon(may_29_2019, date) is False
 
+    def test_mark_old_credit_cards(self, session, credit_cards):
+        """ Credit cards that are about to expire should be marked. """
+        may_29_2019 = datetime.date(2019, 5, 29)
+        june_29_2019 = datetime.date(2019, 6, 29)
+
+        CreditCard.mark_old_credit_cards(may_29_2019)
+
+        card = CreditCard.query.filter(CreditCard.exp_date == june_29_2019)
+        assert card.first().is_expiring
+
+    def test_avoid_marking_up_to_date_credit_cards(self, session,
+                                                   credit_cards):
+        """ Credit cards that are not expiring should not be marked"""
+        may_29_2019 = datetime.date(2019, 5, 29)
+        may_28_2020 = datetime.date(2020, 5, 28)
+
+        CreditCard.mark_old_credit_cards(may_29_2019)
+
+        card = CreditCard.query.filter(CreditCard.exp_date == may_28_2020)
+        assert not card.first().is_expiring
+
 
 class TestInvoice(object):
     def test_parse_payload_from_event(self, mock_stripe):
