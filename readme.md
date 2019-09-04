@@ -6,12 +6,21 @@ If running locally make sure to check ```example.env``` to see what you need for
 
 ## Getting set up
 ### Build and run the app
+1) .env.example to .env
+2) Add your email and stripe credentials to the .env file
+3) Open a terminal configured to run Docker and run:
+    - docker-compose down -v
+    - docker-compose up --build
+    - docker-compose exec web vidme db reset --with-testdb
+    - docker-compose exec web vidme flake8
+    - docker-compose exec web vidme test
+
 In order to get set up, please run ```docker-compose up --build```
 ** you will only need to run --build the first time building the image, or any time a new package is added in requirements.txt **
 
 ### Set up the database
-[Open a 2nd terminal]
-Using the CLI run ```docker-compose exec web vidme db reset --with-testdb```
+With the container running enter ```docker-compose exec web vidme db reset --with-testdb```
+This is necessary for setting up the DB and resetting it if you want to start from a clean slate
 
 ### Access the API
 

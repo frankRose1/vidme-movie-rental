@@ -1,6 +1,7 @@
 from flask import request, url_for
 from flask_classful import route
 from flask_jwt_extended import current_user
+from marshmallow import ValidationError
 from sqlalchemy import text
 
 from vidme.api import JSONViewMixin
@@ -92,7 +93,7 @@ class AdminView(JSONViewMixin, V1FlaskView):
 
         dumped_users = users_schema.dump(paginated_users.items)
         response = {'data': {
-            'users': dumped_users.data,
+            'users': dumped_users,
             'has_next': paginated_users.has_next,
             'has_prev': paginated_users.has_prev,
             'prev_num': paginated_users.prev_num,
@@ -122,8 +123,8 @@ class AdminView(JSONViewMixin, V1FlaskView):
         dumped_user = user_detail_schema.dump(user)
         dumped_invoices = invoices_schema.dump(invoices)
         response = {'data': {
-            'user': dumped_user.data,
-            'invoices': dumped_invoices.data,
+            'user': dumped_user,
+            'invoices': dumped_invoices,
             'upcoming_invoice': upcoming
         }}
         return response
@@ -150,10 +151,10 @@ class AdminView(JSONViewMixin, V1FlaskView):
             response = {'error': 'Invalid input.'}
             return response, 400
 
-        data, errors = admin_edit_user_schema.load(json_data)
-
-        if errors:
-            response = {'error': errors}
+        try:
+            data = admin_edit_user_schema.load(json_data)
+        except ValidationError as err:
+            response = {'error': err.messages}
             return response, 422
 
         # check if user is the last admin
@@ -188,9 +189,10 @@ class AdminView(JSONViewMixin, V1FlaskView):
             response = {'error': 'Invalid input.'}
             return response, 400
 
-        data, errors = bulk_delete_schema.load(json_data)
-        if errors:
-            response = {'error': errors}
+        try:
+            data = bulk_delete_schema.load(json_data)
+        except ValidationError as err:
+            response = {'error': err.messages}
             return response, 422
 
         ids = User.get_bulk_action_ids(scope=data['scope'],

@@ -1,5 +1,6 @@
 from flask import jsonify, request
 from flask_classful import FlaskView
+from marshmallow import ValidationError
 
 from flask_jwt_extended import (
     create_access_token,
@@ -24,11 +25,11 @@ class AuthView(FlaskView):
             })
             return response, 400
 
-        data, errors = auth_schema.load(json_data)
-
-        if errors:
+        try:
+            data = auth_schema.load(json_data)
+        except ValidationError as err:
             response = jsonify({
-                'error': errors
+                'error': err.messages
             })
 
             return response, 422

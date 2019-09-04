@@ -3,6 +3,7 @@ from flask import (
     url_for
 )
 from flask_jwt_extended import jwt_required, current_user
+from marshmallow import ValidationError
 
 from vidme.api import JSONViewMixin
 from vidme.api.v1 import V1FlaskView
@@ -37,10 +38,10 @@ class SubscriptionsView(JSONViewMixin, V1FlaskView):
             response = {'error': 'Invalid input.'}
             return response, 400
 
-        data, errors = create_edit_subscription_schema.load(json_data)
-
-        if errors:
-            return {'error': errors}, 422
+        try:
+            data = create_edit_subscription_schema.load(json_data)
+        except ValidationError as err:
+            return {'error': err.messages}, 422
 
         # get the subscription plan, send a 404 if it doesnt exist
         subscription_plan = Subscription.get_plan(data['plan'])
@@ -61,7 +62,7 @@ class SubscriptionsView(JSONViewMixin, V1FlaskView):
     @jwt_required
     @handle_stripe_exceptions
     def put(self):
-        """Users should be able to update billing info without interuption"""
+        """Users should be able to update billing info without interruption"""
         # if a user had subscribed to a plan they would have
         # a CC model relationship
         if not current_user.credit_card:
@@ -76,11 +77,11 @@ class SubscriptionsView(JSONViewMixin, V1FlaskView):
             response = {'error': 'Invalid input.'}
             return response, 400
 
-        data, errors = create_edit_subscription_schema.load(json_data,
-                                                            partial=('plan',))
-
-        if errors:
-            response = {'error': errors}
+        try:
+            data= create_edit_subscription_schema.load(json_data,
+                                                       partial=('plan',))
+        except ValidationError as err:
+            response = {'error': err.messages}
             return response, 422
 
         card = current_user.credit_card
@@ -108,7 +109,7 @@ class SubscriptionsView(JSONViewMixin, V1FlaskView):
         active_plan = Subscription.get_plan(current_user.subscription.plan)
         credit_card = credit_card_schema.dump(current_user.credit_card)
         response = {'data': {
-            'credit_card': credit_card.data,
+            'credit_card': credit_card,
             'active_plan': active_plan
         }}
         return response, 200
@@ -149,11 +150,13 @@ class PlansView(JSONViewMixin, V1FlaskView):
             return response, 400
 
         partials = ('stripe_token', 'customer_name',)
-        data, errors = create_edit_subscription_schema.load(json_data,
-                                                            partial=partials)
-        if errors:
-            response = {'error': errors}
+        try:
+            data = create_edit_subscription_schema.load(json_data,
+                                                        partial=partials)
+        except ValidationError as err:
+            response = {'error': err.messages}
             return response, 422
+
         # plan should be bronze, gold, or platinum
         new_plan = Subscription.get_plan(data['plan'])
         if new_plan is None:
@@ -163,7 +166,8 @@ class PlansView(JSONViewMixin, V1FlaskView):
         current_plan = current_user.subscription.plan
         if current_plan == data['plan']:
             response = {
-                'error': 'New plan can\'t be the same as your old plan'}
+                'error': 'New plan can\'t be the same as your old plan.'
+            }
             return response, 400
 
         subscription = Subscription()
@@ -193,7 +197,7 @@ class InvoicesView(JSONViewMixin, V1FlaskView):
 
         dumped_invoices = invoices_schema.dump(invoices)
         response = {'data': {
-            'invoices': dumped_invoices.data,
+            'invoices': dumped_invoices,
             'upcoming_invoice': upcoming_invoice
         }}
 

@@ -1,5 +1,6 @@
 from flask import request, url_for
 from flask_classful import route
+from marshmallow import ValidationError
 
 from vidme.api import JSONViewMixin
 from vidme.api.v1 import V1FlaskView
@@ -15,10 +16,10 @@ class UsersView(JSONViewMixin, V1FlaskView):
             response = {'error': 'Invalid input.'}
             return response, 400
 
-        data, errors = registration_schema.load(json_data)
-
-        if errors:
-            response = {'error': errors}
+        try:
+            data = registration_schema.load(json_data)
+        except ValidationError as err:
+            response = {'error': err.messages}
             return response, 422
 
         user = User()
