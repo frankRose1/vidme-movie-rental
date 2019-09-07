@@ -33,7 +33,7 @@ class Invoice(ResourceMixin, db.Model):
     # even if they have no active subscription or changed cards at some point
     # they would still want to see the CC related to a certain invoice
     brand = db.Column(db.String(32))
-    last4 = db.Column(db.Integer)
+    last4 = db.Column(db.String(4))
     exp_date = db.Column(db.Date, index=True)
 
     def __init__(self, **kwargs):

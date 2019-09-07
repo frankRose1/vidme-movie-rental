@@ -1,3 +1,4 @@
+from werkzeug.middleware.proxy_fix import ProxyFix
 from flask import Flask, jsonify
 from celery import Celery
 
@@ -61,7 +62,7 @@ def create_app(settings_override=None):
     :param settings_override: Override app settings
     :return: Flask app
     """
-    app = Flask(__name__, instance_relative_config=True)
+    app = Flask(__name__)
 
     app.config.from_object('config.settings')
 
@@ -150,5 +151,19 @@ def jwt_callbacks():
         }
 
         return jsonify(response), 401
+
+    return None
+
+
+def middleware(app):
+    """
+    Register 0 or more middleware (mutates the app passed in)
+
+    :param app: Flask application instance
+    :return: None
+    """
+    # Swap request.remote_addr with the real IP aaddress even if behind a proxy
+    #This is necessary because we're tracking user's IP addresses
+    app.wsgi_app = ProxyFix(app.wsgi_app)
 
     return None

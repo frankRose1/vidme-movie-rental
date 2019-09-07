@@ -165,7 +165,7 @@ class Plan(object):
         :return: Stripe plans
         """
         try:
-            return stripe.Plan.all()
+            return stripe.Plan.list()
         except stripe.error.StripeError as e:
             print(e)
 

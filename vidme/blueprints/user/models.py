@@ -121,10 +121,9 @@ class User(ResourceMixin, db.Model):
 
         :param query: Query to search by
         :type query: str
-
         :return: SQLAlchemy filter
         """
-        if not query:
+        if query == '':
             return text('')
 
         search_query = '%{0}%'.format(query)  # %% partial words

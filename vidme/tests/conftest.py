@@ -169,13 +169,13 @@ def credit_cards(db):
         {
             'user_id': 1,
             'brand': 'Visa',
-            'last4': 4242,
+            'last4': '4242',
             'exp_date': june_29_2019
         },
         {
             'user_id': 1,
             'brand': 'Visa',
-            'last4': 4242,
+            'last4': '4242',
             'exp_date': timedelta_months(12, may_29_2019)
         },
     ]
@@ -227,7 +227,7 @@ def subscriptions(db):
     params = {
         'user_id': subscriber.id,
         'brand': 'Visa',
-        'last4': 4242,
+        'last4': '4242',
         'exp_date': datetime.date(2019, 6, 1)
     }
     credit_card = CreditCard(**params)
@@ -266,7 +266,7 @@ def invoices(db):
             'total': None,
             'user_id': 1,
             'brand': 'Visa',
-            'last4': 4242,
+            'last4': '4242',
             'exp_date': june_29_2021
         },
         {
@@ -281,7 +281,7 @@ def invoices(db):
             'total': 999,
             'user_id': 1,
             'brand': 'Visa',
-            'last4': 4242,
+            'last4': '4242',
             'exp_date': june_29_2021
         },
     ]

@@ -87,7 +87,7 @@ class AdminView(JSONViewMixin, V1FlaskView):
         # a search feature is provided if the client wants to implement one
         # thats what request.args.get('q') is
         paginated_users = User.query \
-            .filter(User.search(request.args.get('q', ''))) \
+            .filter(User.search(request.args.get('q', text('')))) \
             .order_by(User.role.asc(), User.payment_id, text(order_values)) \
             .paginate(page, page_size, True)
 
@@ -198,7 +198,7 @@ class AdminView(JSONViewMixin, V1FlaskView):
         ids = User.get_bulk_action_ids(scope=data['scope'],
                                        ids=data['bulk_ids'],
                                        omit_ids=[current_user.id],
-                                       query=request.args.get('q', ''))
+                                       query=request.args.get('q', text('')))
 
         # use a celery task to do this in the background
         from vidme.blueprints.admin.tasks import delete_users
