@@ -1,12 +1,9 @@
 # VidMe - Movie Rental API
 As part of an ongoing journey to learn python web development the plan is to create a restful API for a movie rental business using flask, docker, postgres, redis, and celery. Currently, users can sign up, authenticate themselves, and access the billing API to do a number of things regarding subscribing to a plan, viewing billing info, and updating their billing information and plan. There's also a custom admin API to manage user accounts/subscriptions which will grow as more is added to the application. Celery is used for handling background tasks such as sending verification emails and bulk deleting accounts. There are plans to add more in the future.
 
-If running locally make sure to check ```example.env``` to see what you need for the ```.env``` file and ```instance/settings.py.prod_example``` will show you values you would need for the ```instance/settings.py```. Values in ```instance/settings.py``` will overwrite values in ```config/settings.py```
-
-
 ## Getting set up
 ### Build and run the app
-1) .env.example to .env
+1) Change .env.example to .env
 2) Add your email and stripe credentials to the .env file
 3) Open a terminal configured to run Docker and run:
     - docker-compose down -v
